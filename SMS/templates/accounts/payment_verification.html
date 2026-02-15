@@ -1,0 +1,32 @@
+{% extends 'accounts/base_accounts.html' %}
+{% load crispy_forms_tags %}
+
+{% block card_title %}
+    <i class="bi bi-wallet2"></i> Payment Verification
+{% endblock %}
+
+{% block form_content %}
+    <div class="alert alert-info animate__animated animate__pulse animate__infinite animate__slow">
+        <i class="bi bi-info-circle-fill"></i>
+        Hello <strong>{{ user.full_name }}</strong>, please complete payment verification.
+    </div>
+    
+    {% crispy form %}
+    
+    <div class="payment-steps mt-4 p-3 bg-light rounded">
+        <h6><i class="bi bi-check-circle"></i> Steps to complete:</h6>
+        <ol class="mb-0 small">
+            <li>Send PKR 30,000 to JazzCash <strong>0328 1525502</strong></li>
+            <li>Take a screenshot of the payment</li>
+            <li>Upload screenshot and transaction ID above</li>
+            <li>Send same screenshot to WhatsApp <strong>0328 1525502</strong></li>
+            <li>Wait for admin verification (within 24 hours)</li>
+        </ol>
+    </div>
+{% endblock %}
+
+{% block card_footer %}
+    <div class="small">
+        <a href="{% url 'accounts:register' %}">← Back to registration</a>
+    </div>
+{% endblock %}

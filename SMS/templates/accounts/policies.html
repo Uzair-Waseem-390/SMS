@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-info text-white py-3">
+                    <h2 class="text-center mb-0">
+                        <i class="bi bi-shield-lock"></i> Privacy Policy
+                    </h2>
+                </div>
+                <div class="card-body p-5">
+                    <p class="lead text-muted">Last Updated: March 2025</p>
+                    
+                    <h4 class="mt-4">1. Information We Collect</h4>
+                    <p>We collect information to provide better services to all users. This includes:</p>
+                    <ul>
+                        <li><strong>Personal Information:</strong> Name, email, phone number, city</li>
+                        <li><strong>School Information:</strong> School name, branch details, staff records</li>
+                        <li><strong>Payment Information:</strong> Transaction IDs, payment proofs</li>
+                        <li><strong>Usage Data:</strong> Login times, IP addresses, browser information</li>
+                    </ul>
+                    
+                    <h4 class="mt-4">2. How We Use Information</h4>
+                    <p>We use the collected information for:</p>
+                    <ul>
+                        <li>Creating and managing your account</li>
+                        <li>Processing payments and verifying transactions</li>
+                        <li>Providing customer support</li>
+                        <li>Improving our services</li>
+                        <li>Sending important notifications about your account</li>
+                    </ul>
+                    
+                    <h4 class="mt-4">3. Data Protection</h4>
+                    <p>We implement security measures to protect your information:</p>
+                    <ul>
+                        <li>Encrypted password storage</li>
+                        <li>Secure SSL/TLS for data transmission</li>
+                        <li>Regular security audits</li>
+                        <li>Strict access controls</li>
+                    </ul>
+                    
+                    <h4 class="mt-4">4. Data Sharing</h4>
+                    <p>We do not sell your personal information. We may share data only:</p>
+                    <ul>
+                        <li>With your consent</li>
+                        <li>For legal reasons (court orders, legal requests)</li>
+                        <li>With service providers who assist in operating our system</li>
+                    </ul>
+                    
+                    <h4 class="mt-4">5. Your Rights</h4>
+                    <p>You have the right to:</p>
+                    <ul>
+                        <li>Access your personal data</li>
+                        <li>Correct inaccurate data</li>
+                        <li>Request deletion of your data</li>
+                        <li>Export your data</li>
+                    </ul>
+                    
+                    <h4 class="mt-4">6. Cookies and Tracking</h4>
+                    <p>We use cookies to improve user experience. You can control cookie settings through your browser.</p>
+                    
+                    <h4 class="mt-4">7. Children's Privacy</h4>
+                    <p>Our system is designed for schools to manage student records. Parental consent is obtained through schools for collecting student information.</p>
+                    
+                    <h4 class="mt-4">8. Data Retention</h4>
+                    <p>We retain your information as long as your account is active. After account deletion, data is anonymized and kept for legal purposes.</p>
+                    
+                    <h4 class="mt-4">9. International Data Transfers</h4>
+                    <p>Your information may be transferred to servers in different countries. We ensure appropriate safeguards are in place.</p>
+                    
+                    <h4 class="mt-4">10. Changes to Privacy Policy</h4>
+                    <p>We may update this policy. We will notify you of significant changes via email or system notifications.</p>
+                    
+                    <h4 class="mt-4">11. Contact Us</h4>
+                    <p>For privacy-related concerns:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-whatsapp"></i> WhatsApp: 0328 1525502</li>
+                        <li><i class="bi bi-envelope"></i> Email: uzairwaseem390@gmail.com</li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-4">
+                        <i class="bi bi-info-circle-fill"></i>
+                        By using our services, you consent to the collection and use of information as described in this Privacy Policy.
+                    </div>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-info text-white">
+                        <i class="bi bi-arrow-left"></i> Back to Registration
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

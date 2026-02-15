@@ -1,0 +1,219 @@
+<style>
+    /* Custom layout for fixed sidebar and dynamic main */
+    html, body {
+        height: 100%;
+        margin: 0;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background-color: #f4f6f9;
+    }
+
+    /* wrapper uses flex column to keep footer at bottom */
+    .wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* main content row (sidebar + page) expands */
+    .content-row {
+        flex: 1;
+        display: flex;
+    }
+
+    /* sidebar styling */
+    .sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+        color: #ecf0f1;
+        transition: all 0.3s ease;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        padding: 1.5rem 1rem;
+    }
+
+    .sidebar .nav-link {
+        color: #bdc3c7;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.25rem;
+        border-radius: 12px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sidebar .nav-link i {
+        font-size: 1.3rem;
+        width: 28px;
+        text-align: center;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: #34495e;
+        color: white;
+        transform: translateX(5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .sidebar .nav-link.active {
+        background-color: #3498db;
+        color: white;
+        box-shadow: 0 4px 10px rgba(52,152,219,0.4);
+    }
+
+    .sidebar-divider {
+        height: 1px;
+        background-color: #3a4a5a;
+        margin: 1.2rem 0;
+    }
+
+    .sidebar .school-brand {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+        padding: 0.5rem 0.5rem 1rem 0.5rem;
+        border-bottom: 2px solid #3a4a5a;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sidebar .school-brand i {
+        font-size: 2rem;
+        color: #f1c40f;
+    }
+
+    /* main content area */
+    .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: #f4f6f9;
+    }
+
+    /* header inside main content */
+    .header-bar {
+        background: white;
+        padding: 0.8rem 2rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #e5e9f0;
+    }
+
+    .search-wrapper {
+        display: flex;
+        align-items: center;
+        background: #f8fafd;
+        border-radius: 40px;
+        padding: 0.3rem 0.3rem 0.3rem 1.5rem;
+        border: 1px solid #dde1e7;
+        transition: all 0.2s;
+        width: 350px;
+    }
+
+    .search-wrapper:hover, .search-wrapper:focus-within {
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
+        background: white;
+    }
+
+    .search-wrapper input {
+        border: none;
+        background: transparent;
+        outline: none;
+        width: 100%;
+        padding: 0.6rem 0;
+        font-size: 0.95rem;
+    }
+
+    .search-wrapper button {
+        background: #3498db;
+        border: none;
+        border-radius: 40px;
+        padding: 0.5rem 1.8rem;
+        color: white;
+        font-weight: 500;
+        transition: 0.2s;
+        margin-left: 8px;
+    }
+
+    .search-wrapper button:hover {
+        background: #2980b9;
+        transform: scale(1.02);
+    }
+
+    .school-name-header {
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-right: 1rem;
+    }
+
+    /* page content area */
+    .page-content {
+        padding: 2rem;
+        flex: 1;
+        animation: fadeIn 0.4s ease;
+    }
+
+    /* footer */
+    .footer {
+        background-color: white;
+        padding: 1rem 2rem;
+        border-top: 1px solid #d8e0e9;
+        color: #5d6d7e;
+        font-size: 0.95rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .footer .credit a {
+        text-decoration: none;
+        color: #2c3e50;
+        font-weight: 600;
+        transition: color 0.2s;
+        margin: 0 4px;
+    }
+
+    .footer .credit a:hover {
+        color: #3498db;
+        text-decoration: underline;
+    }
+
+    .footer .social-links i {
+        font-size: 1.4rem;
+        margin-left: 15px;
+        color: #5d6d7e;
+        transition: all 0.2s;
+    }
+
+    .footer .social-links i:hover {
+        color: #3498db;
+        transform: translateY(-3px);
+    }
+
+    /* mobile responsive */
+    @media (max-width: 768px) {
+        .content-row {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+            padding: 1rem;
+        }
+        .search-wrapper {
+            width: 200px;
+        }
+        .school-name-header {
+            font-size: 1.4rem;
+        }
+    }
+</style>

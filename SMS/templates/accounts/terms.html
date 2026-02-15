@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h2 class="text-center mb-0">
+                        <i class="bi bi-file-text"></i> Terms and Conditions
+                    </h2>
+                </div>
+                <div class="card-body p-5">
+                    <p class="lead text-muted">Last Updated: March 2025</p>
+                    
+                    <h4 class="mt-4">1. Acceptance of Terms</h4>
+                    <p>By accessing and using this School Management System, you agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, you may not use our services.</p>
+                    
+                    <h4 class="mt-4">2. Registration and Payment</h4>
+                    <p>To use our services as a principal, you must:</p>
+                    <ul>
+                        <li>Pay a one-time registration fee of PKR 30,000</li>
+                        <li>Provide accurate and complete information</li>
+                        <li>Maintain the security of your account</li>
+                        <li>Notify us immediately of any unauthorized access</li>
+                    </ul>
+                    
+                    <h4 class="mt-4">3. Account Activation</h4>
+                    <p>Accounts are activated only after:</p>
+                    <ul>
+                        <li>Payment verification through provided JazzCash account</li>
+                        <li>Manual verification by our team</li>
+                        <li>Confirmation via WhatsApp</li>
+                    </ul>
+                    
+                    <h4 class="mt-4">4. Subscription Plans</h4>
+                    <p>Your registration fee includes access to the Basic plan. Additional features and upgrades may require separate subscription payments.</p>
+                    
+                    <h4 class="mt-4">5. User Responsibilities</h4>
+                    <p>As a user, you agree to:</p>
+                    <ul>
+                        <li>Use the system only for lawful purposes</li>
+                        <li>Not share your login credentials</li>
+                        <li>Maintain accurate school and student records</li>
+                        <li>Comply with all applicable laws and regulations</li>
+                    </ul>
+                    
+                    <h4 class="mt-4">6. Data Privacy</h4>
+                    <p>We are committed to protecting your data. Please review our Privacy Policy for detailed information on how we collect, use, and protect your personal information.</p>
+                    
+                    <h4 class="mt-4">7. Refund Policy</h4>
+                    <p>The registration fee is non-refundable once the account is activated. In case of technical issues preventing service usage, please contact support within 7 days.</p>
+                    
+                    <h4 class="mt-4">8. Service Availability</h4>
+                    <p>We strive to maintain 99.9% uptime but do not guarantee uninterrupted access. We reserve the right to perform maintenance with prior notice.</p>
+                    
+                    <h4 class="mt-4">9. Modifications to Terms</h4>
+                    <p>We may modify these terms at any time. Continued use of the system after changes constitutes acceptance of new terms.</p>
+                    
+                    <h4 class="mt-4">10. Contact Information</h4>
+                    <p>For questions about these terms, contact us at:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-whatsapp"></i> WhatsApp: 0328 1525502</li>
+                        <li><i class="bi bi-envelope"></i> Email: uzairwaseem390.com</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        By clicking "Register" you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
+                    </div>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Registration
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'accounts/base_accounts.html' %}
+{% load crispy_forms_tags %}
+
+{% block card_title %}
+    <i class="bi bi-box-arrow-in-right"></i> Welcome Back
+{% endblock %}
+
+{% block form_content %}
+    {% crispy form %}
+    
+    <div class="text-center mt-3">
+        <a href="{% url 'accounts:forgotPassword' %}" class="text-decoration-none small">Forgot Password?</a>
+    </div>
+{% endblock %}
+
+{% block card_footer %}
+    <div class="small">
+        <a href="{% url 'accounts:register' %}">Need an account? Register now!</a>
+    </div>
+{% endblock %}
