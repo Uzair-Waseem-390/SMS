@@ -1,12 +1,20 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
+{% block extra_css %}
+<style>
+    body { background: linear-gradient(180deg, #f0fdfa 0%, #f8fafc 100%); }
+    .card-footer a, .card-body a { color: #0d9488 !important; font-weight: 500; }
+    .card-footer a:hover, .card-body a:hover { color: #0f766e !important; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6 col-xl-5">
             <div class="card shadow-lg border-0 rounded-lg mt-5 animate__animated animate__fadeIn">
-                <div class="card-header bg-gradient-primary text-white py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-header text-white py-3" style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);">
                     <h3 class="text-center font-weight-light my-2">
                         {% block card_title %}{{ title }}{% endblock %}
                     </h3>
