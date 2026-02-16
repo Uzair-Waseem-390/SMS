@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-lg animate__animated animate__bounceIn">
+                <div class="card-header bg-success text-white py-4">
+                    <h2 class="text-center mb-0">
+                        <i class="bi bi-check-circle-fill"></i> 
+                        Setup Complete!
+                    </h2>
+                </div>
+                
+                <div class="card-body p-5">
+                    <div class="text-center mb-5">
+                        <div class="display-1 text-success mb-4">
+                            <i class="bi bi-emoji-smile-fill"></i>
+                        </div>
+                        <h3>Welcome, {{ user.full_name }}!</h3>
+                        <p class="lead text-muted">
+                            Your school has been successfully set up in the system.
+                        </p>
+                    </div>
+                    
+                    {% if school %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-primary h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0"><i class="bi bi-building"></i> School Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Name:</strong> {{ school.name }}</p>
+                                    <p><strong>City:</strong> {{ school.city }}</p>
+                                    <p><strong>Address:</strong> {{ school.address }}</p>
+                                    <p><strong>Phone:</strong> {{ school.phone }}</p>
+                                    <p><strong>Email:</strong> {{ school.email }}</p>
+                                    <p><strong>Established:</strong> {{ school.established_year|default:"Not specified" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-success h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Branches ({{ branches|length }})</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if branches %}
+                                        {% for branch in branches %}
+                                            <div class="branch-item mb-3 p-3 border rounded {% if branch.is_main_branch %}bg-light{% endif %}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1">
+                                                            {{ branch.name }}
+                                                            {% if branch.is_main_branch %}
+                                                                <span class="badge bg-primary">Main</span>
+                                                            {% endif %}
+                                                        </h6>
+                                                        <small class="text-muted d-block">
+                                                            <i class="bi bi-geo-alt"></i> {{ branch.city }}
+                                                        </small>
+                                                        <small class="text-muted d-block">
+                                                            <i class="bi bi-person"></i> Manager: {{ branch.manager.email }}
+                                                        </small>
+                                                    </div>
+                                                    {% if user.user_type == 'principal' %}
+                                                        <a href="{% url 'tenants:manage_branch' branch.id %}" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-pencil"></i> Manage
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted">No branches found.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert alert-info">
+                        <h5><i class="bi bi-info-circle"></i> Test Mode</h5>
+                        <p class="mb-0">
+                            This is a test page. The actual dashboard will be implemented here later. 
+                            You can now:
+                        </p>
+                        <ul class="mb-0 mt-2">
+                            <li>Log in as manager using the credentials you set</li>
+                            <li>Edit branch details and manager credentials</li>
+                            <li>Explore the system structure</li>
+                        </ul>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-lg">
+                                    <i class="bi bi-person"></i> My Profile
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-success btn-lg">
+                                    <i class="bi bi-speedometer2"></i> Dashboard (Coming Soon)
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger btn-lg">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer text-center py-3 text-muted">
+                    <small>
+                        <i class="bi bi-clock"></i> 
+                        Setup completed at: {% now "F j, Y, g:i a" %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

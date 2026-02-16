@@ -20,13 +20,13 @@
         <!-- Top row: header + sidebar + content area -->
         <div class="content-row">
             <!-- SIDEBAR (static navigation) -->
-            {% if not "accounts" in request.path %}
+            {% if not "accounts" in request.path and "tenants" not in request.path %}
                 {% include 'includes/sidebar.html' %}
             {% endif %}
             <!-- MAIN CONTENT (header + page + footer) -->
             <div class="main-content">
                 <!-- HEADER with search and school name -->
-                {% if not "accounts" in request.path %}
+                {% if not "accounts" in request.path and "tenants" not in request.path %}
                     {% include 'includes/header.html' %}
                 {% endif %}
 

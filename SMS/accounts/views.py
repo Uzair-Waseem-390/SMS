@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
+from accounts.utils import has_school_setup
 
 
 from .forms import (
@@ -105,7 +106,10 @@ def login_view(request):
     Checks if user is active and payment verified before allowing login.
     """
     if request.user.is_authenticated:
-        return redirect('accounts:test_page')
+        # return redirect('accounts:test_page')
+        if not has_school_setup(request.user):
+            return redirect('tenants:setup_wizard')
+        return redirect('tenants:test_page')
     
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
@@ -118,7 +122,11 @@ def login_view(request):
                 if user.can_login():
                     login(request, user)
                     messages.success(request, f'Welcome back, {user.full_name}!')
-                    return redirect('accounts:test_page')
+                    # return redirect('accounts:test_page')
+                    if not has_school_setup(user):
+                        return redirect('tenants:setup_wizard')
+                    else:
+                        return redirect('tenants:test_page')
                 elif user.payment_verified and not user.is_active:
                     messages.warning(
                         request, 

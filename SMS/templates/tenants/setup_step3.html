@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Progress Steps -->
+            <div class="mb-4">
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar bg-primary" style="width: 100%" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                        Step 3/3: Manager Credentials
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-lg border-0 rounded-lg animate__animated animate__fadeIn">
+                <div class="card-header bg-success text-white py-4">
+                    <h3 class="text-center mb-0">
+                        <i class="bi bi-person-badge"></i> Set Up Branch Managers
+                    </h3>
+                    <p class="text-center mb-0 mt-2">
+                        Create manager accounts for each branch
+                    </p>
+                </div>
+                
+                <div class="card-body p-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Important:</strong> These credentials will be used by branch managers to log in. 
+                        You can change them later from the management panel.
+                    </div>
+                    
+                    <form method="post" class="form">
+                        {% csrf_token %}
+                        
+                        {% for branch in branches %}
+                            <div class="manager-section mb-4 p-4 border rounded bg-light">
+                                <h4 class="text-success mb-3">
+                                    <i class="bi bi-person"></i> Manager for {{ branch.name }}
+                                </h4>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Manager Email</label>
+                                        <input type="email" 
+                                               name="manager_email_{{ branch.form_id }}" 
+                                               class="form-control form-control-lg"
+                                               value="manager.{{ branch.name|lower|cut:' ' }}@school.com"
+                                               required>
+                                        <small class="text-muted">Used for manager login</small>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Manager Password</label>
+                                        <input type="text" 
+                                               name="manager_password_{{ branch.form_id }}" 
+                                               class="form-control form-control-lg"
+                                               value="Manager@{{ branch.form_id }}123"
+                                               required>
+                                        <small class="text-muted">You can change this later</small>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Confirm Password</label>
+                                        <input type="text" 
+                                               name="confirm_password_{{ branch.form_id }}" 
+                                               class="form-control form-control-lg"
+                                               value="Manager@{{ branch.form_id }}123"
+                                               required>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'tenants:setup_wizard' %}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Finish Setup
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer text-center py-3 bg-light">
+                    <small class="text-muted">
+                        <i class="bi bi-key"></i> 
+                        Save these credentials securely. Managers will need them to log in.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

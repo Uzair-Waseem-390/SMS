@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load tenants_extras %}
+
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Progress Steps -->
+            <div class="mb-4">
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar bg-primary" style="width: 66%" role="progressbar" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100">
+                        Step 2/3: Branch Details
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-lg border-0 rounded-lg animate__animated animate__fadeIn">
+                <div class="card-header bg-primary text-white py-4">
+                    <h3 class="text-center mb-0">
+                        <i class="bi bi-diagram-3"></i> Add Branch Details
+                    </h3>
+                    <p class="text-center mb-0 mt-2">
+                        School: <strong>{{ school_name }}</strong> | 
+                        Total Branches: <strong>{{ num_branches }}</strong>
+                    </p>
+                </div>
+                
+                <div class="card-body p-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" class="form">
+                        {% csrf_token %}
+                        
+                        {% for i in "x"|ljust:num_branches %}
+                            {% with forloop.counter as branch_num %}
+                                <div class="branch-section mb-5 p-4 border rounded {% if not forloop.last %}border-bottom-0{% endif %}">
+                                    <h4 class="text-primary mb-4">
+                                        <i class="bi bi-geo-alt"></i> Branch {{ branch_num }} Details
+                                    </h4>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Branch {{ branch_num }} Name</label>
+                                            {{ form|get_item:'branch_'|add:branch_num|add:'_name'|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Branch {{ branch_num }} City</label>
+                                            {{ form|get_item:'branch_'|add:branch_num|add:'_city'|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Branch {{ branch_num }} Address</label>
+                                        {{ form|get_item:'branch_'|add:branch_num|add:'_address'|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Branch {{ branch_num }} Phone</label>
+                                            {{ form|get_item:'branch_'|add:branch_num|add:'_phone'|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Branch {{ branch_num }} Email</label>
+                                            {{ form|get_item:'branch_'|add:branch_num|add:'_email'|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% endfor %}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'tenants:setup_wizard' %}" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Next <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add custom template filter for dictionary access
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Step 2 loaded');
+    });
+</script>
+{% endblock %}
