@@ -34,6 +34,7 @@ INSTALLED_APPS = [
 EXTERNAL_APPS = [
     'accounts',
     'tenants',
+    'rbac',
 ]
 
 
