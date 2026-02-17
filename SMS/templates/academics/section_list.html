@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-layers"></i> Sections Management</h2>
+            {% if current_class %}
+                <p class="text-muted">Class: {{ current_class.name }}</p>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <form method="get" class="form-inline float-end">
+                {{ filter_form|crispy }}
+            </form>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% if sections %}
+            {% for section in sections %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-geo-alt"></i> {{ section.class_obj.name }} - {{ section.name }}
+                                </h5>
+                                <span class="badge bg-light text-dark">{{ section.code }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Capacity:</small>
+                                    <strong>{{ section.capacity }} students</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Room:</small>
+                                    <strong>{{ section.room_number|default:"Not assigned" }}</strong>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mt-3">Subjects:</h6>
+                            <div class="subjects-list">
+                                {% for assignment in section.subject_assignments.all %}
+                                    <span class="badge bg-success me-1 mb-1">
+                                        {{ assignment.subject.name }}{% if assignment.teacher %} ({{ assignment.teacher.get_full_name }}){% endif %}
+                                        {% if can_manage %}
+                                        <a href="{% url 'academics:remove_subject' assignment.id %}" class="text-white ms-1" title="Remove"><i class="bi bi-x-circle small"></i></a>
+                                        {% endif %}
+                                    </span>
+                                {% empty %}
+                                    <p class="text-muted small">No subjects assigned yet</p>
+                                {% endfor %}
+                            </div>
+                            
+                            <hr>
+                            <div class="d-flex justify-content-between flex-wrap gap-1">
+                                {% if can_manage %}
+                                <a href="{% url 'academics:assign_subjects' section.id %}" 
+                                   class="btn btn-sm btn-success">
+                                    <i class="bi bi-plus-circle"></i> Assign Subjects
+                                </a>
+                                <a href="{% url 'academics:edit_section' section.id %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <a href="{% url 'academics:delete_section' section.id %}" 
+                                   class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                                {% else %}
+                                <span class="text-muted small"><i class="bi bi-info-circle"></i> View only</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center py-5">
+                    <i class="bi bi-info-circle fs-1"></i>
+                    <h4 class="mt-3">No Sections Found</h4>
+                    <p>Create a class first to add sections.</p>
+                    {% if can_manage %}
+                    <a href="{% url 'academics:create_class_wizard' %}" class="btn btn-primary btn-lg mt-3">
+                        <i class="bi bi-plus-circle"></i> Create Class
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

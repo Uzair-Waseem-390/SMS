@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Progress Steps -->
+            <div class="mb-4">
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar bg-primary" style="width: 100%" role="progressbar">
+                        Step 2/2: Add Sections
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-success text-white py-4">
+                    <h3 class="text-center mb-0">
+                        <i class="bi bi-layers"></i> Add Sections to {{ class_name }}
+                    </h3>
+                    <p class="text-center mb-0 mt-2">Total Sections: {{ num_sections }}</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" class="form">
+                        {% csrf_token %}
+                        
+                        {% for i in "x"|rjust:num_sections %}
+                            {% with forloop.counter as section_num %}
+                                <div class="section-card mb-4 p-4 border rounded {% if not forloop.last %}border-bottom{% endif %}">
+                                    <h5 class="text-primary mb-3">
+                                        <i class="bi bi-geo-alt"></i> Section {{ section_num }}
+                                    </h5>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Section Name *</label>
+                                            <input type="text" 
+                                                   name="section_{{ section_num }}_name" 
+                                                   class="form-control form-control-lg"
+                                                   placeholder="e.g., A, B, C, Blue, Red"
+                                                   required>
+                                            <small class="text-muted">Enter a unique name for this section</small>
+                                        </div>
+                                        
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label fw-bold">Capacity</label>
+                                            <input type="number" 
+                                                   name="section_{{ section_num }}_capacity" 
+                                                   class="form-control"
+                                                   value="30"
+                                                   min="1"
+                                                   max="100">
+                                        </div>
+                                        
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label fw-bold">Room Number</label>
+                                            <input type="text" 
+                                                   name="section_{{ section_num }}_room" 
+                                                   class="form-control"
+                                                   placeholder="e.g., 101">
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% endfor %}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'academics:create_class_wizard' %}?back=1" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Create Class & Sections
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer text-center py-3 bg-light">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i>
+                        Sections will be created under {{ class_name }}. You can assign subjects to sections later.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

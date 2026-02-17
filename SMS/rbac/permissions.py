@@ -38,9 +38,11 @@ class Permissions(Enum):
     SECTION_VIEW = "section.view"
     SECTION_CREATE = "section.create"
     SECTION_EDIT = "section.edit"
+    SECTION_DELETE = "section.delete"
     SUBJECT_VIEW = "subject.view"
     SUBJECT_CREATE = "subject.create"
     SUBJECT_EDIT = "subject.edit"
+    SUBJECT_DELETE = "subject.delete"
     SUBJECT_ASSIGN = "subject.assign"  # Assign teacher to subject
     TIMETABLE_VIEW = "timetable.view"
     TIMETABLE_CREATE = "timetable.create"
@@ -184,9 +186,11 @@ ACADEMIC_PERMISSIONS = [
     Permissions.SECTION_VIEW,
     Permissions.SECTION_CREATE,
     Permissions.SECTION_EDIT,
+    Permissions.SECTION_DELETE,
     Permissions.SUBJECT_VIEW,
     Permissions.SUBJECT_CREATE,
     Permissions.SUBJECT_EDIT,
+    Permissions.SUBJECT_DELETE,
     Permissions.SUBJECT_ASSIGN,
     Permissions.TIMETABLE_VIEW,
     Permissions.TIMETABLE_CREATE,

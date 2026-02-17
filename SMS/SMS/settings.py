@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-0yy5&m*&m95af-74a*q3=)6bx*e(^!&wi7k-#gqf7$gjbm$*mu
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -35,6 +35,7 @@ EXTERNAL_APPS = [
     'accounts',
     'tenants',
     'rbac',
+    'academics',
 ]
 
 

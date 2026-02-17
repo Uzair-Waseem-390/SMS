@@ -352,3 +352,42 @@ def require_any_permission(permission_codes):
         return _wrapped_view
 
     return decorator
+
+
+def require_principal_or_manager():
+    """
+    Decorator for academics: allows Principal and Manager (by user_type) only.
+    Used for class/section/subject create/edit/delete - only principals and managers may perform these.
+    Bypasses RBAC so principals/managers get access even without explicit role assignment.
+    """
+    from functools import wraps
+    from accounts.utils import can_manage_academics
+
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if can_manage_academics(request.user):
+                return view_func(request, *args, **kwargs)
+            raise PermissionDenied(
+                "Only principals and managers can perform this action."
+            )
+        return _wrapped_view
+    return decorator
+
+
+def require_principal_or_manager_or_permission(permission_code):
+    """
+    Decorator for academics list views: Principal/Manager always allowed, others need permission.
+    """
+    from functools import wraps
+    from accounts.utils import can_manage_academics
+
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if can_manage_academics(request.user):
+                return view_func(request, *args, **kwargs)
+            RBACService().require_permission(request.user, permission_code)
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg border-danger">
+                <div class="card-header bg-danger text-white py-4">
+                    <h3 class="text-center mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Delete Section
+                    </h3>
+                </div>
+                <div class="card-body p-5">
+                    <p class="lead text-center">
+                        Are you sure you want to deactivate section
+                        <strong>{{ section.class_obj.name }} - {{ section.name }}</strong>?
+                    </p>
+                    <p class="text-muted text-center">
+                        This will deactivate the section. You can restore it later if needed.
+                    </p>
+                    <form method="post" class="d-flex justify-content-between gap-2 mt-4">
+                        {% csrf_token %}
+                        <a href="{% url 'academics:section_list' %}" class="btn btn-secondary btn-lg flex-grow-1">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg flex-grow-1">
+                            <i class="bi bi-trash"></i> Yes, Deactivate
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
