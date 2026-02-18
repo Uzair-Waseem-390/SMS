@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg border-danger">
+                <div class="card-header bg-danger text-white py-4">
+                    <h3 class="text-center mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Deactivate Student
+                    </h3>
+                </div>
+                <div class="card-body p-5">
+                    <p class="lead text-center">
+                        Are you sure you want to deactivate <strong>{{ student.full_name }}</strong>?
+                    </p>
+                    <p class="text-muted text-center">
+                        This will deactivate the student's account. They will no longer be able to login.
+                    </p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Student:</span>
+                            <strong>{{ student.full_name }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Admission #:</span>
+                            <strong>{{ student.admission_number }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Class/Section:</span>
+                            <strong>{{ student.section.class_obj.name }} - {{ student.section.name }}</strong>
+                        </li>
+                    </ul>
+                    <form method="post" class="d-flex justify-content-between gap-2">
+                        {% csrf_token %}
+                        <a href="{% url 'students:student_detail' student.id %}" class="btn btn-secondary btn-lg flex-grow-1">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg flex-grow-1">
+                            <i class="bi bi-trash"></i> Yes, Deactivate
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

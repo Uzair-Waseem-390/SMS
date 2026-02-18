@@ -15,6 +15,7 @@ urlpatterns = [
     path('sections/class/<int:class_id>/', views.section_list, name='sections_by_class'),
     path('sections/<int:section_id>/edit/', views.edit_section, name='edit_section'),
     path('sections/<int:section_id>/delete/', views.delete_section, name='delete_section'),
+    path('sections/<int:section_id>/students/', views.section_students, name='section_students'),
     path('sections/<int:section_id>/assign-subjects/', views.assign_subjects_to_section, name='assign_subjects'),
     path('assignments/<int:assignment_id>/remove/', views.remove_subject_from_section, name='remove_subject'),
     

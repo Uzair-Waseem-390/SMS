@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-people"></i> Students in Section</h2>
+            <p class="text-muted mb-0">{{ class_obj.name }} - {{ section.name }}</p>
+            <small class="text-muted">Branch: {{ branch.name }}</small>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'academics:section_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Sections
+            </a>
+            <a href="{% url 'students:create_student_wizard' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Student
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if students %}
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <strong>{{ students|length }} Student{{ students|length|pluralize }}</strong>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Admission #</th>
+                                    <th>Name</th>
+                                    <th>Father's Name</th>
+                                    <th>Parents</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ student.admission_number }}</td>
+                                    <td>{{ student.full_name }}</td>
+                                    <td>{{ student.father_name }}</td>
+                                    <td>
+                                        {% for parent in student.parents.all %}
+                                            <span class="badge bg-info me-1">{{ parent.full_name }}</span>
+                                        {% empty %}
+                                            <span class="text-muted">—</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'students:student_detail' student.id %}" 
+                                           class="btn btn-sm btn-outline-primary" title="View">View</a>
+                                        <a href="{% url 'students:edit_student' student.id %}" 
+                                           class="btn btn-sm btn-outline-secondary" title="Edit">Edit</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center py-5">
+                    <i class="bi bi-people fs-1"></i>
+                    <h4 class="mt-3">No Students in This Section</h4>
+                    <p>No students have been enrolled in {{ class_obj.name }} - {{ section.name }} yet.</p>
+                    <a href="{% url 'students:create_student_wizard' %}" class="btn btn-primary mt-3">
+                        <i class="bi bi-plus-circle"></i> Add First Student
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

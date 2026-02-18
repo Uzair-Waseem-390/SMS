@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.urls import reverse
 from .models import Class, Section, Subject, SectionSubject
+from students.models import Student
 from .forms import (
     ClassCreationStep1Form,
     ClassEditForm,
@@ -270,6 +271,29 @@ def section_list(request, class_id=None):
         'branch': branch,
         'title': 'Sections Management',
         'can_manage': can_manage_academics(request.user),
+    })
+
+
+@login_required
+@require_principal_or_manager_or_permission(Permissions.SECTION_VIEW.value)
+def section_students(request, section_id):
+    """Display all students in a section."""
+    branch = get_user_branch(request.user, request)
+    if not branch:
+        messages.error(request, "No branch associated with your account.")
+        return _get_dashboard_redirect()
+
+    section = get_object_or_404(Section, id=section_id, class_obj__branch=branch)
+    students = Student.objects.filter(section=section, is_active=True).select_related(
+        'user'
+    ).prefetch_related('parents')
+
+    return render(request, 'academics/section_students.html', {
+        'section': section,
+        'students': students,
+        'branch': branch,
+        'class_obj': section.class_obj,
+        'title': f'Students - {section.class_obj.name} {section.name}',
     })
 
 

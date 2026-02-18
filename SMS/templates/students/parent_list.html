@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-people-fill"></i> Parents Management</h2>
+            <p class="text-muted">Branch: {{ branch.name }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if parents %}
+            {% for parent in parents %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm hover-card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-person-badge"></i> {{ parent.full_name }}
+                                </h5>
+                                {% if parent.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-1">
+                                <small class="text-muted">Relationship:</small>
+                                <strong>{{ parent.get_relationship_display }}</strong>
+                            </p>
+                            <p class="mb-1">
+                                <small class="text-muted">Email:</small><br>
+                                {{ parent.email }}
+                            </p>
+                            <p class="mb-1">
+                                <small class="text-muted">Phone:</small><br>
+                                {{ parent.phone_number }}
+                            </p>
+                            <p class="mb-1">
+                                <small class="text-muted">Children:</small><br>
+                                {% for student in parent.students.all %}
+                                    <span class="badge bg-info me-1">{{ student.full_name }}</span>
+                                {% empty %}
+                                    <span class="text-muted">None</span>
+                                {% endfor %}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'students:parent_detail' parent.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{% url 'students:edit_parent' parent.id %}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center py-5">
+                    <i class="bi bi-people-fill fs-1"></i>
+                    <h4 class="mt-3">No Parents Found</h4>
+                    <p>Parents are created when you add students. Add a student first.</p>
+                    <a href="{% url 'students:create_student_wizard' %}" class="btn btn-primary mt-3">
+                        <i class="bi bi-plus-circle"></i> Add Student
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+</style>
+{% endblock %}

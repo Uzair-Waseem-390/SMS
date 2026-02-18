@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-people"></i> Students Management</h2>
+            <p class="text-muted">Branch: {{ branch.name }} | Total Students: {{ total_students }} | Active: {{ active_students }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'students:create_student_wizard' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Add New Student
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    {{ filter_form.class_filter|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.section_filter|as_crispy_field }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.status_filter|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    {{ filter_form.search|as_crispy_field }}
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Students List -->
+    <div class="row">
+        {% if students %}
+            {% for student in students %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm hover-card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-person-circle"></i> {{ student.full_name }}
+                                </h5>
+                                {% if student.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-1">
+                                <small class="text-muted">Admission #:</small><br>
+                                <strong>{{ student.admission_number }}</strong>
+                            </p>
+                            <p class="mb-1">
+                                <small class="text-muted">Class/Section:</small><br>
+                                <strong>{{ student.section.class_obj.name }} - Section {{ student.section.name }}</strong>
+                            </p>
+                            <p class="mb-1">
+                                <small class="text-muted">Father's Name:</small><br>
+                                {{ student.father_name }}
+                            </p>
+                            <p class="mb-1">
+                                <small class="text-muted">Parents:</small><br>
+                                {% for parent in student.parents.all %}
+                                    <span class="badge bg-info">{{ parent.full_name }}</span>
+                                {% empty %}
+                                    <span class="text-muted">No parent linked</span>
+                                {% endfor %}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'students:student_detail' student.id %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{% url 'students:edit_student' student.id %}" 
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                {% if student.is_active %}
+                                    <a href="{% url 'students:delete_student' student.id %}" 
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> Deactivate
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center py-5">
+                    <i class="bi bi-info-circle fs-1"></i>
+                    <h4 class="mt-3">No Students Found</h4>
+                    <p>Get started by adding your first student.</p>
+                    <a href="{% url 'students:create_student_wizard' %}" class="btn btn-primary btn-lg mt-3">
+                        <i class="bi bi-plus-circle"></i> Add Student
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+</style>
+{% endblock %}
