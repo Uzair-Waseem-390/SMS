@@ -6,11 +6,13 @@ from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.db.models import Q
+from django.core.exceptions import PermissionDenied
 
 from .models import Employee, Teacher, Accountant
 from .forms import (
     StaffCreationStep1Form, StaffCreationStep2Form,
     StaffFilterForm, EmployeeEditForm, TeacherEditForm, AccountantEditForm,
+    ChangeCredentialsForm, ProfileEditForm,
     USER_TYPE_MAP,
 )
 from accounts.utils import get_user_branch, get_user_school
@@ -213,13 +215,27 @@ def _handle_step2(request, school, branch):
 # ─── List ─────────────────────────────────────────────────────────
 
 @login_required
-@require_principal_or_manager_or_permission(Permissions.STAFF_VIEW.value)
+@require_principal_or_manager()
 def staff_list(request):
     school = get_user_school(request.user)
     branch = get_user_branch(request.user, request)
     if not school:
         messages.error(request, "No school associated with your account.")
         return _get_dashboard_redirect()
+
+    user = request.user
+    is_principal = user.user_type == 'principal'
+    is_manager = user.user_type == 'manager'
+
+    # Managers visible to principal; manager sees only self
+    managers = User.objects.none()
+    if is_principal:
+        managers = User.objects.filter(
+            user_type='manager', is_active=True,
+            managed_branch__school=school,
+        ).select_related('managed_branch')
+    elif is_manager:
+        managers = User.objects.filter(id=user.id)
 
     teachers = Teacher.objects.filter(school=school, is_active=True).select_related('user', 'branch', 'incharge_section').prefetch_related('subjects')
     accountants = Accountant.objects.filter(school=school, is_active=True).select_related('user', 'branch')
@@ -233,19 +249,26 @@ def staff_list(request):
         search = filter_form.cleaned_data.get('search')
 
         if status:
-            is_active = status == 'active'
-            teachers = Teacher.objects.filter(school=school, is_active=is_active).select_related('user', 'branch', 'incharge_section').prefetch_related('subjects')
-            accountants = Accountant.objects.filter(school=school, is_active=is_active).select_related('user', 'branch')
-            employees = Employee.objects.filter(school=school, is_active=is_active).select_related('user', 'branch')
+            is_active_val = status == 'active'
+            teachers = Teacher.objects.filter(school=school, is_active=is_active_val).select_related('user', 'branch', 'incharge_section').prefetch_related('subjects')
+            accountants = Accountant.objects.filter(school=school, is_active=is_active_val).select_related('user', 'branch')
+            employees = Employee.objects.filter(school=school, is_active=is_active_val).select_related('user', 'branch')
 
         if emp_type:
-            if emp_type == 'teacher':
+            if emp_type == 'manager':
+                teachers = Teacher.objects.none()
+                accountants = Accountant.objects.none()
+                employees = Employee.objects.none()
+            elif emp_type == 'teacher':
+                managers = User.objects.none()
                 accountants = Accountant.objects.none()
                 employees = Employee.objects.none()
             elif emp_type == 'accountant':
+                managers = User.objects.none()
                 teachers = Teacher.objects.none()
                 employees = Employee.objects.none()
             else:
+                managers = User.objects.none()
                 teachers = Teacher.objects.none()
                 accountants = Accountant.objects.none()
                 employees = employees.filter(employee_type=emp_type)
@@ -254,30 +277,46 @@ def staff_list(request):
             teachers = teachers.filter(branch=branch_f)
             accountants = accountants.filter(branch=branch_f)
             employees = employees.filter(branch=branch_f)
+            if is_principal:
+                managers = managers.filter(managed_branch=branch_f)
 
         if search:
             teachers = teachers.filter(Q(user__full_name__icontains=search) | Q(user__email__icontains=search) | Q(employee_code__icontains=search))
             accountants = accountants.filter(Q(user__full_name__icontains=search) | Q(user__email__icontains=search) | Q(employee_code__icontains=search))
             employees = employees.filter(Q(first_name__icontains=search) | Q(last_name__icontains=search) | Q(employee_id__icontains=search) | Q(phone_number__icontains=search))
+            if managers.exists():
+                managers = managers.filter(Q(full_name__icontains=search) | Q(email__icontains=search))
 
-    can_manage = request.user.user_type in ('principal', 'manager')
+    total = teachers.count() + accountants.count() + employees.count() + managers.count()
 
     return render(request, 'staff/staff_list.html', {
         'teachers': teachers, 'accountants': accountants, 'employees': employees,
+        'managers': managers,
         'filter_form': filter_form, 'school': school, 'title': 'Staff Management',
-        'total_staff': teachers.count() + accountants.count() + employees.count(),
-        'can_manage': can_manage,
+        'total_staff': total,
+        'can_manage': True,
+        'is_principal': is_principal,
+        'is_manager': is_manager,
     })
 
 
 # ─── Detail ───────────────────────────────────────────────────────
 
 @login_required
-@require_principal_or_manager_or_permission(Permissions.STAFF_VIEW.value)
+@require_principal_or_manager()
 def staff_detail(request, staff_type, staff_id):
     school = get_user_school(request.user)
     if not school:
         return _get_dashboard_redirect()
+
+    if staff_type == 'manager':
+        staff_user = get_object_or_404(User, id=staff_id, user_type='manager')
+        if request.user.user_type == 'manager' and request.user.id != staff_id:
+            raise PermissionDenied("You can only view your own profile.")
+        return render(request, 'staff/manager_detail.html', {
+            'staff_user': staff_user, 'staff_type': 'manager',
+            'title': f'Manager: {staff_user.full_name}',
+        })
 
     if staff_type == 'teacher':
         staff = get_object_or_404(
@@ -395,4 +434,84 @@ def activate_staff(request, staff_type, staff_id):
     return render(request, 'staff/activate_staff.html', {
         'staff': staff, 'staff_type': staff_type,
         'title': f'Activate {staff_type.title()}: {staff.full_name}',
+    })
+
+
+# ─── My Profile (Principal / Manager) ────────────────────────────
+
+@login_required
+@require_principal_or_manager()
+def my_profile(request):
+    user = request.user
+    school = get_user_school(user)
+    branch = get_user_branch(user, request)
+
+    return render(request, 'staff/my_profile.html', {
+        'profile_user': user,
+        'school': school,
+        'branch': branch,
+        'title': 'My Profile',
+    })
+
+
+@login_required
+@require_principal_or_manager()
+def edit_my_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('staff:my_profile')
+    else:
+        form = ProfileEditForm(instance=user)
+
+    return render(request, 'staff/edit_my_profile.html', {
+        'form': form,
+        'title': 'Edit My Profile',
+    })
+
+
+# ─── Change Credentials (email/password) for any user ────────────
+
+@login_required
+@require_principal_or_manager()
+def change_credentials(request, user_id):
+    """Principal/Manager can change email and password of any user in their school."""
+    actor = request.user
+    school = get_user_school(actor)
+    if not school:
+        return _get_dashboard_redirect()
+
+    target_user = get_object_or_404(User, id=user_id)
+
+    # Manager cannot change other managers' or principal's credentials
+    if actor.user_type == 'manager':
+        if target_user.user_type == 'principal':
+            raise PermissionDenied("Managers cannot change the Principal's credentials.")
+        if target_user.user_type == 'manager' and target_user.id != actor.id:
+            raise PermissionDenied("Managers cannot change other Managers' credentials.")
+
+    if request.method == 'POST':
+        form = ChangeCredentialsForm(request.POST, target_user=target_user)
+        if form.is_valid():
+            new_email = form.cleaned_data.get('new_email')
+            new_password = form.cleaned_data.get('new_password')
+
+            if new_email and new_email != target_user.email:
+                target_user.email = new_email
+            if new_password:
+                target_user.set_password(new_password)
+
+            target_user.save()
+            messages.success(request, f'Credentials for "{target_user.full_name}" updated successfully.')
+            return redirect('staff:staff_list')
+    else:
+        form = ChangeCredentialsForm(target_user=target_user)
+
+    return render(request, 'staff/change_credentials.html', {
+        'form': form,
+        'target_user': target_user,
+        'title': f'Change Credentials: {target_user.full_name}',
     })

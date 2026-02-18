@@ -237,8 +237,11 @@ class StaffCreationStep2Form(forms.Form):
         return cleaned_data
 
 
+FILTER_TYPE_CHOICES = [('', 'All Types'), ('manager', 'Manager')] + EMPLOYEE_TYPE_CHOICES
+
+
 class StaffFilterForm(forms.Form):
-    employee_type = forms.ChoiceField(choices=[('', 'All Types')] + EMPLOYEE_TYPE_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'this.form.submit();'}))
+    employee_type = forms.ChoiceField(choices=FILTER_TYPE_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'this.form.submit();'}))
     status_filter = forms.ChoiceField(choices=[('', 'All Status'), ('active', 'Active'), ('inactive', 'Inactive')], required=False, widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'this.form.submit();'}))
     branch_filter = forms.ModelChoiceField(queryset=None, required=False, empty_label="All Branches", widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'this.form.submit();'}))
     search = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Search by name, ID, phone...'}))
@@ -382,3 +385,70 @@ class AccountantEditForm(forms.ModelForm):
         if commit:
             accountant.save()
         return accountant
+
+
+class ChangeCredentialsForm(forms.Form):
+    """Allows principal/manager to change a user's login email and password."""
+
+    new_email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control form-control-lg'}),
+        label="New Email (login)",
+    )
+    new_password = forms.CharField(
+        required=False, min_length=6,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label="New Password",
+        help_text="Leave blank to keep the current password."
+    )
+    confirm_password = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label="Confirm Password",
+    )
+
+    def __init__(self, *args, target_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.target_user = target_user
+        if target_user:
+            self.fields['new_email'].initial = target_user.email
+
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Fieldset('Login Credentials',
+                'new_email',
+                Row(Column('new_password', css_class='col-md-6 mb-3'), Column('confirm_password', css_class='col-md-6 mb-3')),
+            ),
+            FormActions(Submit('submit', 'Update Credentials', css_class='btn btn-warning btn-lg')),
+        )
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get('new_password', '')
+        p2 = cleaned.get('confirm_password', '')
+        if p1 and p1 != p2:
+            self.add_error('confirm_password', 'Passwords do not match.')
+        new_email = cleaned.get('new_email', '')
+        if new_email and self.target_user and new_email != self.target_user.email:
+            if User.objects.filter(email=new_email).exclude(id=self.target_user.id).exists():
+                self.add_error('new_email', 'This email is already in use by another account.')
+        return cleaned
+
+
+class ProfileEditForm(forms.ModelForm):
+    """For principal/manager to edit their own profile."""
+
+    class Meta:
+        model = User
+        fields = ['full_name', 'phone_number', 'city']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Row(Column('full_name', css_class='col-md-6 mb-3'), Column('phone_number', css_class='col-md-6 mb-3')),
+            'city',
+            FormActions(Submit('submit', 'Update Profile', css_class='btn btn-primary btn-lg')),
+        )
