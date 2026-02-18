@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-bell"></i> Notifications</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'notification:timetable_list' %}" class="btn btn-outline-info me-2"><i class="bi bi-calendar-week"></i> Timetables</a>
+            <a href="{% url 'notification:create_notification' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> New Notification</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                {% if is_principal and branches %}
+                <div class="col-md-3">
+                    <label class="form-label">Branch</label>
+                    <select name="branch_id" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Branches</option>
+                        {% for b in branches %}
+                        <option value="{{ b.id }}" {% if selected_branch == b.id|stringformat:"d" %}selected{% endif %}>{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+                <div class="col-md-3">
+                    <label class="form-label">Type</label>
+                    <select name="type" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Types</option>
+                        {% for val, label in notification_types %}
+                        <option value="{{ val }}" {% if selected_type == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+    {% endif %}
+
+    {% if notifications %}
+    <div class="row">
+        {% for notif in notifications %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm {% if notif.is_expired %}border-secondary opacity-75{% elif notif.notification_type == 'urgent' %}border-danger{% elif notif.notification_type == 'important' %}border-warning{% endif %}">
+                <div class="card-header {% if notif.notification_type == 'urgent' %}bg-danger text-white{% elif notif.notification_type == 'important' %}bg-warning{% else %}bg-primary text-white{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ notif.title }}</h5>
+                        <span class="badge bg-light text-dark">{{ notif.get_visibility_display }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">{{ notif.message|truncatewords:30 }}</p>
+                    <p class="mb-1"><small class="text-muted">Date:</small> {{ notif.date|date:"M d, Y" }} at {{ notif.time|time:"h:i A" }}</p>
+                    <p class="mb-1"><small class="text-muted">Branch:</small> {{ notif.branch.name }}</p>
+                    <p class="mb-1"><small class="text-muted">Expires:</small> {{ notif.expires_on|date:"M d, Y" }}
+                        {% if notif.is_expired %}<span class="badge bg-secondary">Expired</span>{% endif %}
+                    </p>
+                    <p class="mb-0"><small class="text-muted">By:</small> {{ notif.created_by.full_name|default:"--" }}</p>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'notification:notification_detail' notif.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View</a>
+                        <a href="{% url 'notification:edit_notification' notif.id %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
+                        <a href="{% url 'notification:delete_notification' notif.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-bell-slash fs-1"></i>
+        <h4 class="mt-3">No Notifications Found</h4>
+        <a href="{% url 'notification:create_notification' %}" class="btn btn-primary mt-3"><i class="bi bi-plus-circle"></i> Create First Notification</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

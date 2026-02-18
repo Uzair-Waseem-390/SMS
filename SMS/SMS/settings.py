@@ -40,6 +40,7 @@ EXTERNAL_APPS = [
     'staff',
     'attendance',
     'exams',
+    'notification',
 ]
 
 
