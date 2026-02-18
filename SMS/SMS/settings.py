@@ -38,6 +38,7 @@ EXTERNAL_APPS = [
     'academics',
     'students',
     'staff',
+    'attendance',
 ]
 
 

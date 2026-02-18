@@ -10,7 +10,10 @@
         </div>
         {% if can_manage %}
         <div class="col-md-4 text-end">
-            <a href="{% url 'staff:create_staff_wizard' %}" class="btn btn-primary btn-lg">
+            <a href="{% url 'attendance:bulk_staff_attendance' %}" class="btn btn-success me-2">
+                <i class="bi bi-clipboard-check"></i> Mark Attendance
+            </a>
+            <a href="{% url 'staff:create_staff_wizard' %}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Add New Staff
             </a>
         </div>

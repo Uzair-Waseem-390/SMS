@@ -56,6 +56,7 @@ class Permissions(Enum):
     ATTENDANCE_EXPORT = "attendance.export"
     STAFF_ATTENDANCE_VIEW = "staff.attendance.view"
     STAFF_ATTENDANCE_MARK = "staff.attendance.mark"
+    STAFF_ATTENDANCE_EDIT = "staff.attendance.edit"
     
     # Finance Management
     FEE_VIEW = "fee.view"
@@ -205,6 +206,7 @@ ATTENDANCE_PERMISSIONS = [
     Permissions.ATTENDANCE_EXPORT,
     Permissions.STAFF_ATTENDANCE_VIEW,
     Permissions.STAFF_ATTENDANCE_MARK,
+    Permissions.STAFF_ATTENDANCE_EDIT,
 ]
 
 FINANCE_PERMISSIONS = [

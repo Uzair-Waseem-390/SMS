@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-clipboard-check"></i> {{ title }}</h2>
+            <p class="text-muted mb-0">Branch: {{ branch.name }} | School: {{ school.name }}</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'attendance:staff_attendance_report' %}" class="btn btn-outline-info me-2">
+                <i class="bi bi-bar-chart"></i> View Report
+            </a>
+            <a href="{% url 'staff:staff_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Staff
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Picker -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Attendance Date</label>
+                    <input type="date" name="date" value="{{ att_date|date:'Y-m-d' }}" class="form-control form-control-lg">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-calendar-check"></i> Load</button>
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-primary fs-6 px-3 py-2">{{ att_date|date:"l, F d, Y" }}</span>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button type="button" class="btn btn-success btn-sm" id="mark-all-present">All Present</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="mark-all-absent">All Absent</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if staff_rows %}
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="attendance_date" value="{{ att_date|date:'Y-m-d' }}">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <strong>{{ staff_rows|length }} Staff Member{{ staff_rows|length|pluralize }}</strong>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width:4%">#</th>
+                            <th style="width:20%">Name</th>
+                            <th style="width:10%">Type</th>
+                            <th style="width:14%">Status</th>
+                            <th style="width:12%">Late Time</th>
+                            <th style="width:12%">Half Leave Time</th>
+                            <th style="width:18%">Remarks</th>
+                            <th style="width:5%">Saved</th>
+                            <th style="width:5%">Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in staff_rows %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><strong>{{ row.name }}</strong></td>
+                            <td><span class="badge bg-secondary">{{ row.type }}</span></td>
+                            <td>
+                                <select name="status_{{ row.user.id }}" class="form-select form-select-sm attendance-status"
+                                        data-uid="{{ row.user.id }}" onchange="toggleTimeFields(this)">
+                                    {% for val, label in status_choices %}
+                                        <option value="{{ val }}" {% if row.status == val %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="time" name="late_time_{{ row.user.id }}"
+                                       value="{% if row.late_time %}{{ row.late_time|time:'H:i' }}{% endif %}"
+                                       class="form-control form-control-sm late-field-{{ row.user.id }}"
+                                       {% if row.status != 'late' %}style="display:none"{% endif %}>
+                            </td>
+                            <td>
+                                <input type="time" name="half_leave_time_{{ row.user.id }}"
+                                       value="{% if row.half_leave_time %}{{ row.half_leave_time|time:'H:i' }}{% endif %}"
+                                       class="form-control form-control-sm halfleave-field-{{ row.user.id }}"
+                                       {% if row.status != 'halfleave' %}style="display:none"{% endif %}>
+                            </td>
+                            <td>
+                                <input type="text" name="remarks_{{ row.user.id }}" value="{{ row.remarks }}"
+                                       class="form-control form-control-sm" placeholder="Remarks">
+                            </td>
+                            <td>
+                                {% if row.saved %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i></span>
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="bi bi-dash-circle"></i></span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'attendance:individual_staff_attendance' row.user.id %}" class="btn btn-sm btn-outline-primary" title="Individual">
+                                    <i class="bi bi-person"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="mt-3 text-center">
+            <button type="submit" name="save_attendance" class="btn btn-success btn-lg px-5">
+                <i class="bi bi-check-circle"></i> Save Staff Attendance
+            </button>
+        </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-people fs-1"></i>
+        <h4 class="mt-3">No Staff Found</h4>
+        <p>There are no active staff members in this branch.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('mark-all-present')?.addEventListener('click', function() {
+    document.querySelectorAll('.attendance-status').forEach(function(s) {
+        s.value = 'present';
+        toggleTimeFields(s);
+    });
+});
+document.getElementById('mark-all-absent')?.addEventListener('click', function() {
+    document.querySelectorAll('.attendance-status').forEach(function(s) {
+        s.value = 'absent';
+        toggleTimeFields(s);
+    });
+});
+
+function toggleTimeFields(selectEl) {
+    var uid = selectEl.dataset.uid;
+    var lateField = document.querySelector('.late-field-' + uid);
+    var halfField = document.querySelector('.halfleave-field-' + uid);
+    if (lateField) lateField.style.display = selectEl.value === 'late' ? '' : 'none';
+    if (halfField) halfField.style.display = selectEl.value === 'halfleave' ? '' : 'none';
+}
+</script>
+
+<style>
+.attendance-status { min-width: 110px; }
+</style>
+{% endblock %}

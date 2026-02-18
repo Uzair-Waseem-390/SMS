@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-person-check"></i> {{ title }}</h2>
+            <p class="text-muted">Staff Member: {{ staff_user.get_full_name }}</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'attendance:bulk_staff_attendance' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Staff Attendance
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Mark/Edit Attendance</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-7">
+                                <label class="form-label">Date</label>
+                                <input type="date" name="date" value="{{ att_date|date:'Y-m-d' }}" class="form-control">
+                            </div>
+                            <div class="col-5">
+                                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-calendar-check"></i> Load</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-info py-2">
+                        <strong>Date:</strong> {{ att_date|date:"l, F d, Y" }}
+                        {% if existing %}
+                            <span class="badge bg-success ms-2">Already Marked</span>
+                        {% endif %}
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="attendance_date" value="{{ att_date|date:'Y-m-d' }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Status</label>
+                            <select name="status" id="staff-status" class="form-select" onchange="toggleStaffTime()">
+                                {% for val, label in status_choices %}
+                                    <option value="{{ val }}" {% if existing and existing.status == val %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3" id="late-time-group" style="{% if not existing or existing.status != 'late' %}display:none{% endif %}">
+                            <label class="form-label fw-bold">Late Arrival Time</label>
+                            <input type="time" name="late_time" class="form-control"
+                                   value="{% if existing and existing.late_time %}{{ existing.late_time|time:'H:i' }}{% endif %}">
+                        </div>
+                        <div class="mb-3" id="halfleave-time-group" style="{% if not existing or existing.status != 'halfleave' %}display:none{% endif %}">
+                            <label class="form-label fw-bold">Half Leave Time</label>
+                            <input type="time" name="half_leave_time" class="form-control"
+                                   value="{% if existing and existing.half_leave_time %}{{ existing.half_leave_time|time:'H:i' }}{% endif %}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Remarks</label>
+                            <input type="text" name="remarks" value="{% if existing %}{{ existing.remarks }}{% endif %}"
+                                   class="form-control" placeholder="Optional remarks">
+                        </div>
+                        <button type="submit" name="save_attendance" class="btn btn-success w-100">
+                            <i class="bi bi-check-circle"></i> Save Attendance
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Attendance History</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Late Time</th>
+                                <th>Half Leave</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in recent %}
+                            <tr>
+                                <td>{{ rec.date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if rec.status == 'present' %}
+                                        <span class="badge bg-success">Present</span>
+                                    {% elif rec.status == 'absent' %}
+                                        <span class="badge bg-danger">Absent</span>
+                                    {% elif rec.status == 'late' %}
+                                        <span class="badge bg-warning text-dark">Late</span>
+                                    {% elif rec.status == 'leave' %}
+                                        <span class="badge bg-info">Leave</span>
+                                    {% elif rec.status == 'halfleave' %}
+                                        <span class="badge bg-purple" style="background:#6f42c1">Half Leave</span>
+                                    {% endif %}
+                                </td>
+                                <td>{% if rec.late_time %}{{ rec.late_time|time:"h:i A" }}{% else %}--{% endif %}</td>
+                                <td>{% if rec.half_leave_time %}{{ rec.half_leave_time|time:"h:i A" }}{% else %}--{% endif %}</td>
+                                <td>{{ rec.remarks|default:"--" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No attendance records yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleStaffTime() {
+    var val = document.getElementById('staff-status').value;
+    document.getElementById('late-time-group').style.display = val === 'late' ? '' : 'none';
+    document.getElementById('halfleave-time-group').style.display = val === 'halfleave' ? '' : 'none';
+}
+</script>
+{% endblock %}

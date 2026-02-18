@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-bar-chart"></i> {{ title }}</h2>
+            <p class="text-muted mb-0">Branch: {{ branch.name }} | School: {{ school.name }}</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'attendance:bulk_staff_attendance' %}" class="btn btn-primary me-2">
+                <i class="bi bi-clipboard-check"></i> Mark Attendance
+            </a>
+            <a href="{% url 'staff:staff_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Staff
+            </a>
+        </div>
+    </div>
+
+    <!-- Month/Year Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Month</label>
+                    <select name="month" class="form-select">
+                        {% for m_num, m_name in months %}
+                            <option value="{{ m_num }}" {% if m_num == month %}selected{% endif %}>{{ m_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Year</label>
+                    <input type="number" name="year" value="{{ year }}" class="form-control" min="2020" max="2030">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-filter"></i> Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if staff_data %}
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0 text-center" style="font-size: 0.85rem;">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-start" style="min-width:180px">Staff Member</th>
+                        <th style="min-width:80px">Type</th>
+                        {% for d in days %}
+                            <th style="min-width:32px">{{ d.day }}</th>
+                        {% endfor %}
+                        <th style="min-width:40px" class="bg-success text-white">P</th>
+                        <th style="min-width:40px" class="bg-danger text-white">A</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in staff_data %}
+                    <tr>
+                        <td class="text-start">
+                            <a href="{% url 'attendance:individual_staff_attendance' row.user.id %}" class="text-decoration-none">
+                                {{ row.name }}
+                            </a>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ row.type }}</span></td>
+                        {% for st in row.days %}
+                        <td>
+                            {% if st == 'present' %}
+                                <span class="text-success fw-bold">P</span>
+                            {% elif st == 'absent' %}
+                                <span class="text-danger fw-bold">A</span>
+                            {% elif st == 'late' %}
+                                <span class="text-warning fw-bold">L</span>
+                            {% elif st == 'leave' %}
+                                <span class="text-info fw-bold">V</span>
+                            {% elif st == 'halfleave' %}
+                                <span style="color:#6f42c1" class="fw-bold">H</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        <td class="fw-bold text-success">{{ row.present }}</td>
+                        <td class="fw-bold text-danger">{{ row.absent }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <small class="text-muted">
+            <span class="text-success fw-bold">P</span> = Present |
+            <span class="text-danger fw-bold">A</span> = Absent |
+            <span class="text-warning fw-bold">L</span> = Late |
+            <span class="text-info fw-bold">V</span> = Leave |
+            <span style="color:#6f42c1" class="fw-bold">H</span> = Half Leave |
+            <span class="text-muted">-</span> = Not Marked
+        </small>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-bar-chart fs-1"></i>
+        <h4 class="mt-3">No Staff Data</h4>
+        <p>No staff members found for this branch.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
