@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-people"></i> Staff Management</h2>
+            <p class="text-muted">School: {{ school.name }} | Total Staff: {{ total_staff }}</p>
+        </div>
+        {% if can_manage %}
+        <div class="col-md-4 text-end">
+            <a href="{% url 'staff:create_staff_wizard' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Add New Staff
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    {{ filter_form.employee_type|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.branch_filter|as_crispy_field }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.status_filter|as_crispy_field }}
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        {{ filter_form.search|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Teachers Section -->
+    {% if teachers %}
+    <div class="mb-5">
+        <h4 class="mb-3"><i class="bi bi-person-workspace"></i> Teachers ({{ teachers|length }})</h4>
+        <div class="row">
+            {% for teacher in teachers %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-header bg-info text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-person-circle"></i> {{ teacher.full_name }}</h5>
+                            {% if teacher.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><small class="text-muted">Code:</small> <strong>{{ teacher.employee_code }}</strong></p>
+                        <p class="mb-1"><small class="text-muted">Branch:</small> {{ teacher.branch.name }}</p>
+                        <p class="mb-1"><small class="text-muted">Specialization:</small> {{ teacher.specialization|default:"--" }}</p>
+                        {% if teacher.subjects.all %}
+                        <p class="mb-1"><small class="text-muted">Subjects:</small>
+                            {% for s in teacher.subjects.all %}
+                                <span class="badge bg-primary">{{ s.name }}</span>
+                            {% endfor %}
+                        </p>
+                        {% endif %}
+                        {% if teacher.incharge_section %}
+                            <span class="badge bg-warning text-dark mt-1">Incharge: {{ teacher.incharge_section }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'staff:staff_detail' 'teacher' teacher.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View</a>
+                            {% if can_manage %}
+                            <a href="{% url 'staff:edit_staff' 'teacher' teacher.id %}" class="btn btn-sm btn-outline-success"><i class="bi bi-pencil"></i> Edit</a>
+                            {% if teacher.is_active %}
+                                <a href="{% url 'staff:deactivate_staff' 'teacher' teacher.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-x"></i></a>
+                            {% else %}
+                                <a href="{% url 'staff:activate_staff' 'teacher' teacher.id %}" class="btn btn-sm btn-outline-success"><i class="bi bi-person-check"></i></a>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Accountants Section -->
+    {% if accountants %}
+    <div class="mb-5">
+        <h4 class="mb-3"><i class="bi bi-calculator"></i> Accountants ({{ accountants|length }})</h4>
+        <div class="row">
+            {% for accountant in accountants %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-header bg-success text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-person-circle"></i> {{ accountant.full_name }}</h5>
+                            {% if accountant.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><small class="text-muted">Code:</small> <strong>{{ accountant.employee_code }}</strong></p>
+                        <p class="mb-1"><small class="text-muted">Branch:</small> {{ accountant.branch.name }}</p>
+                        <p class="mb-1"><small class="text-muted">Qualification:</small> {{ accountant.qualification|default:"--" }}</p>
+                        {% if accountant.certification %}
+                        <p class="mb-1"><small class="text-muted">Certification:</small> {{ accountant.certification }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'staff:staff_detail' 'accountant' accountant.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View</a>
+                            {% if can_manage %}
+                            <a href="{% url 'staff:edit_staff' 'accountant' accountant.id %}" class="btn btn-sm btn-outline-success"><i class="bi bi-pencil"></i> Edit</a>
+                            {% if accountant.is_active %}
+                                <a href="{% url 'staff:deactivate_staff' 'accountant' accountant.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-x"></i></a>
+                            {% else %}
+                                <a href="{% url 'staff:activate_staff' 'accountant' accountant.id %}" class="btn btn-sm btn-outline-success"><i class="bi bi-person-check"></i></a>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Other Employees Section -->
+    {% if employees %}
+    <div>
+        <h4 class="mb-3"><i class="bi bi-people"></i> Other Staff ({{ employees|length }})</h4>
+        <div class="row">
+            {% for employee in employees %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-header bg-secondary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-person-circle"></i> {{ employee.full_name }}</h5>
+                            {% if employee.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><small class="text-muted">ID:</small> <strong>{{ employee.employee_id }}</strong></p>
+                        <p class="mb-1"><small class="text-muted">Position:</small> <strong>{{ employee.get_employee_type_display }}</strong></p>
+                        <p class="mb-1"><small class="text-muted">Branch:</small> {{ employee.branch.name }}</p>
+                        <p class="mb-1"><small class="text-muted">Phone:</small> {{ employee.phone_number }}</p>
+                        <p class="mb-1"><small class="text-muted">Joined:</small> {{ employee.joining_date|date:"M d, Y" }}</p>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'staff:staff_detail' 'employee' employee.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View</a>
+                            {% if can_manage %}
+                            <a href="{% url 'staff:edit_staff' 'employee' employee.id %}" class="btn btn-sm btn-outline-success"><i class="bi bi-pencil"></i> Edit</a>
+                            {% if employee.is_active %}
+                                <a href="{% url 'staff:deactivate_staff' 'employee' employee.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-x"></i></a>
+                            {% else %}
+                                <a href="{% url 'staff:activate_staff' 'employee' employee.id %}" class="btn btn-sm btn-outline-success"><i class="bi bi-person-check"></i></a>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not teachers and not accountants and not employees %}
+    <div class="col-12">
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle fs-1"></i>
+            <h4 class="mt-3">No Staff Found</h4>
+            <p>Get started by adding your first staff member.</p>
+            {% if can_manage %}
+            <a href="{% url 'staff:create_staff_wizard' %}" class="btn btn-primary btn-lg mt-3">
+                <i class="bi bi-plus-circle"></i> Add Staff
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.hover-card { transition: transform 0.2s, box-shadow 0.2s; }
+.hover-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+</style>
+{% endblock %}

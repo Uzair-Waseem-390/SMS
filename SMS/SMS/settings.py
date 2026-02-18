@@ -37,6 +37,7 @@ EXTERNAL_APPS = [
     'rbac',
     'academics',
     'students',
+    'staff',
 ]
 
 

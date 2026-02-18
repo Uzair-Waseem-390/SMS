@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Progress Steps -->
+            <div class="mb-4">
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar bg-success" style="width: 100%" role="progressbar">
+                        Step 2/2: Account Creation
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-success text-white py-4">
+                    <h3 class="text-center mb-0">
+                        <i class="bi bi-person-check"></i> Create Staff Account
+                    </h3>
+                    {% if branch %}
+                    <p class="text-center mb-0 mt-2">Branch: {{ branch.name }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-5">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="alert alert-warning mb-4">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Important:</strong> These credentials will be used by the staff member to login.
+                        You can edit them below if needed.
+                    </div>
+
+                    {% crispy form %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
