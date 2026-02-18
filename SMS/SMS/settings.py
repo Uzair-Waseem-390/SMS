@@ -39,6 +39,7 @@ EXTERNAL_APPS = [
     'students',
     'staff',
     'attendance',
+    'exams',
 ]
 
 

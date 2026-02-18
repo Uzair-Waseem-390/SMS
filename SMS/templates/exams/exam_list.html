@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-journal-text"></i> Exams</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            {% if can_manage %}
+            <a href="{% url 'exams:exam_report' %}" class="btn btn-outline-info me-2"><i class="bi bi-bar-chart"></i> Reports</a>
+            <a href="{% url 'exams:create_exam' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create Exam</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="q" class="form-control" placeholder="Exam name or subject..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Exam Type</label>
+                    <select name="exam_type" class="form-select">
+                        <option value="">All Types</option>
+                        {% for val, label in exam_types %}
+                        <option value="{{ val }}" {% if selected_type == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Class</label>
+                    <select name="class_id" class="form-select">
+                        <option value="">All Classes</option>
+                        {% for c in classes %}
+                        <option value="{{ c.id }}" {% if selected_class == c.id|stringformat:"d" %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Subject</label>
+                    <select name="subject_id" class="form-select">
+                        <option value="">All Subjects</option>
+                        {% for s in subjects %}
+                        <option value="{{ s.id }}" {% if selected_subject == s.id|stringformat:"d" %}selected{% endif %}>{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i></button>
+                </div>
+                {% if search_query or selected_type or selected_class or selected_subject %}
+                <div class="col-md-1">
+                    <a href="{% url 'exams:exam_list' %}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-lg"></i></a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if exams %}
+    <div class="table-responsive">
+        <table class="table table-hover shadow-sm bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th>Exam Name</th>
+                    <th>Type</th>
+                    <th>Subject</th>
+                    <th>Class - Section</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Marks</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                <tr>
+                    <td>
+                        <a href="{% url 'exams:exam_detail' exam.id %}" class="text-decoration-none fw-bold">{{ exam.name }}</a>
+                    </td>
+                    <td><span class="badge bg-secondary">{{ exam.get_exam_type_display }}</span></td>
+                    <td>{{ exam.subject.name }}</td>
+                    <td>{{ exam.class_obj.name }} - {{ exam.section.name }}</td>
+                    <td>{{ exam.date|date:"M d, Y" }}</td>
+                    <td>{{ exam.start_time|time:"h:i A" }} <small class="text-muted">({{ exam.duration_display }})</small></td>
+                    <td>{{ exam.total_marks }} <small class="text-muted">(Pass: {{ exam.passing_marks }})</small></td>
+                    <td>
+                        {% if exam.is_published %}
+                        <span class="badge bg-success">Published</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                            {% if can_manage %}
+                            <a href="{% url 'exams:exam_attendance' exam.id %}" class="btn btn-outline-success" title="Attendance"><i class="bi bi-clipboard-check"></i></a>
+                            <a href="{% url 'exams:exam_results_entry' exam.id %}" class="btn btn-outline-warning" title="Results"><i class="bi bi-pencil-square"></i></a>
+                            <a href="{% url 'exams:edit_exam' exam.id %}" class="btn btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-journal-text fs-1"></i>
+        <h4 class="mt-3">No Exams Found</h4>
+        <p class="text-muted">{% if search_query or selected_type or selected_class %}Try changing your filters.{% endif %}</p>
+        {% if can_manage %}
+        <a href="{% url 'exams:create_exam' %}" class="btn btn-primary mt-2"><i class="bi bi-plus-circle"></i> Create First Exam</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

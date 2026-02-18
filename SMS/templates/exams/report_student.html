@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-person-lines-fill"></i> {{ student.full_name }} - Exam Results</h2>
+            <p class="text-muted mb-0">{{ student.section.class_obj.name }} - {{ student.section.name }} | Admission: {{ student.admission_number }}</p>
+        </div>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+
+    {% if result_data %}
+    <!-- Overall summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm bg-light">
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-4">
+                            <h3 class="text-primary mb-0">{{ result_data|length }}</h3>
+                            <small>Exams</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-success mb-0">{{ total_obtained|floatformat:1 }}/{{ total_max }}</h3>
+                            <small>Total Marks</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="{% if overall_pct >= 50 %}text-success{% elif overall_pct >= 33 %}text-warning{% else %}text-danger{% endif %} mb-0">{{ overall_pct }}%</h3>
+                            <small>Overall %</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Exam</th>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>Attendance</th>
+                        <th>Marks</th>
+                        <th>Percentage</th>
+                        <th>Grade</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in result_data %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><a href="{% url 'exams:exam_detail' row.result.exam.id %}">{{ row.result.exam.name }}</a></td>
+                        <td><span class="badge bg-secondary">{{ row.result.exam.get_exam_type_display }}</span></td>
+                        <td>{{ row.result.exam.subject.name }}</td>
+                        <td>{{ row.result.exam.date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if row.attendance %}
+                                {% if row.attendance.status == 'present' %}<span class="badge bg-success">Present</span>
+                                {% elif row.attendance.status == 'absent' %}<span class="badge bg-danger">Absent</span>
+                                {% else %}<span class="badge bg-info">Leave</span>{% endif %}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if row.result.is_absent %}<span class="text-danger">AB</span>
+                            {% elif row.result.obtained_marks != None %}{{ row.result.obtained_marks }}/{{ row.result.exam.total_marks }}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>{% if row.result.percentage %}{{ row.result.percentage }}%{% else %}-{% endif %}</td>
+                        <td>
+                            {% if row.result.grade %}
+                            <span class="badge {% if row.result.is_passed %}bg-success{% else %}bg-danger{% endif %}">{{ row.result.grade }}</span>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if row.result.is_absent %}<span class="text-muted">Absent</span>
+                            {% elif row.result.is_passed %}<span class="text-success fw-bold">Pass</span>
+                            {% elif row.result.obtained_marks != None %}<span class="text-danger fw-bold">Fail</span>
+                            {% else %}-{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-4">
+        <i class="bi bi-journal-x fs-1"></i>
+        <h4 class="mt-2">No exam results found for this student.</h4>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-pencil-square"></i> Enter Exam Results</h2>
+            <p class="text-muted mb-0">{{ exam.name }} | {{ exam.subject.name }} | {{ exam.section }} | Total: {{ exam.total_marks }} | Pass: {{ exam.passing_marks }}</p>
+        </div>
+        <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Exam</a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <form method="post">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>Admission #</th>
+                            <th style="width:120px;">Marks (/ {{ exam.total_marks }})</th>
+                            <th style="width:80px;">Absent</th>
+                            <th>Grade</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr class="{% if row.saved %}table-info{% endif %}">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ row.student.full_name }}</td>
+                            <td><small>{{ row.student.admission_number }}</small></td>
+                            <td>
+                                <input type="number" step="0.01" min="0" max="{{ exam.total_marks }}"
+                                       name="marks_{{ row.student.id }}" class="form-control form-control-sm marks-input"
+                                       data-sid="{{ row.student.id }}"
+                                       value="{% if row.obtained_marks != None %}{{ row.obtained_marks }}{% endif %}"
+                                       {% if row.is_absent %}disabled{% endif %}>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" name="absent_{{ row.student.id }}" class="form-check-input absent-check"
+                                       data-sid="{{ row.student.id }}"
+                                       {% if row.is_absent %}checked{% endif %}>
+                            </td>
+                            <td>
+                                {% if row.grade %}<span class="badge bg-secondary">{{ row.grade }}</span>{% else %}-{% endif %}
+                            </td>
+                            <td>
+                                <input type="text" name="remarks_{{ row.student.id }}" class="form-control form-control-sm"
+                                       value="{{ row.remarks }}" placeholder="Optional">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer text-end">
+                <button type="submit" class="btn btn-warning btn-lg"><i class="bi bi-save"></i> Save Results</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.absent-check').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+        var sid = this.dataset.sid;
+        var inp = document.querySelector('.marks-input[data-sid="'+sid+'"]');
+        if (this.checked) {
+            inp.disabled = true;
+            inp.value = '';
+        } else {
+            inp.disabled = false;
+        }
+    });
+});
+</script>
+{% endblock %}

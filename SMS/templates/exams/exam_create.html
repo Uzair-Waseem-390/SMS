@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-journal-plus"></i> {{ title }}</h2>
+                <a href="{% url 'exams:exam_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" id="examForm">
+                {% csrf_token %}
+                <div class="row">
+                    <!-- Left: Exam details -->
+                    <div class="col-lg-7">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="bi bi-pencil-square"></i> Exam Details</h5></div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Exam Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="name" class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                                               value="{{ form.name.value|default:'' }}" required>
+                                        {% if form.name.errors %}<div class="invalid-feedback">{{ form.name.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Exam Type <span class="text-danger">*</span></label>
+                                        <select name="exam_type" class="form-select {% if form.exam_type.errors %}is-invalid{% endif %}" required>
+                                            {% for val, label in form.exam_type.field.choices %}
+                                            <option value="{{ val }}" {% if form.exam_type.value == val %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.exam_type.errors %}<div class="invalid-feedback">{{ form.exam_type.errors.0 }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Date <span class="text-danger">*</span></label>
+                                        <input type="date" name="date" class="form-control {% if form.date.errors %}is-invalid{% endif %}"
+                                               value="{{ form.date.value|default:'' }}" required>
+                                        {% if form.date.errors %}<div class="invalid-feedback">{{ form.date.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Start Time <span class="text-danger">*</span></label>
+                                        <input type="time" name="start_time" class="form-control {% if form.start_time.errors %}is-invalid{% endif %}"
+                                               value="{{ form.start_time.value|default:'' }}" required>
+                                        {% if form.start_time.errors %}<div class="invalid-feedback">{{ form.start_time.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Duration (min) <span class="text-danger">*</span></label>
+                                        <input type="number" name="duration_minutes" min="1" class="form-control {% if form.duration_minutes.errors %}is-invalid{% endif %}"
+                                               value="{{ form.duration_minutes.value|default:'' }}" required>
+                                        {% if form.duration_minutes.errors %}<div class="invalid-feedback">{{ form.duration_minutes.errors.0 }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Subject <span class="text-danger">*</span></label>
+                                        <select name="subject" class="form-select {% if form.subject.errors %}is-invalid{% endif %}" required>
+                                            <option value="">---------</option>
+                                            {% for s in form.subject.field.queryset %}
+                                            <option value="{{ s.id }}" {% if form.subject.value|stringformat:"d" == s.id|stringformat:"d" %}selected{% endif %}>{{ s.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.subject.errors %}<div class="invalid-feedback">{{ form.subject.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Total Marks <span class="text-danger">*</span></label>
+                                        <input type="number" name="total_marks" min="1" class="form-control {% if form.total_marks.errors %}is-invalid{% endif %}"
+                                               value="{{ form.total_marks.value|default:'100' }}" required>
+                                        {% if form.total_marks.errors %}<div class="invalid-feedback">{{ form.total_marks.errors.0 }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">Passing Marks <span class="text-danger">*</span></label>
+                                        <input type="number" name="passing_marks" min="0" class="form-control {% if form.passing_marks.errors %}is-invalid{% endif %}"
+                                               value="{{ form.passing_marks.value|default:'33' }}" required>
+                                        {% if form.passing_marks.errors %}<div class="invalid-feedback">{{ form.passing_marks.errors.0 }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Description / Instructions</label>
+                                    <textarea name="description" class="form-control" rows="3">{{ form.description.value|default:'' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Class & Section selection -->
+                    <div class="col-lg-5">
+                        <!-- Classes -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-building"></i> Select Classes</h5>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-light" id="btnAllClasses">All</button>
+                                    <button type="button" class="btn btn-sm btn-outline-light" id="btnNoneClasses">None</button>
+                                </div>
+                            </div>
+                            <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+                                {% if form.classes.errors %}<div class="alert alert-danger py-1 px-2 mb-2">{{ form.classes.errors.0 }}</div>{% endif %}
+                                {% for c in classes %}
+                                <div class="form-check mb-2">
+                                    <input type="checkbox" name="classes" value="{{ c.id }}" class="form-check-input class-check"
+                                           id="class_{{ c.id }}" data-classid="{{ c.id }}"
+                                           {% if c.id|stringformat:"d" in selected_classes %}checked{% endif %}>
+                                    <label class="form-check-label" for="class_{{ c.id }}">
+                                        <strong>{{ c.name }}</strong>
+                                        <span class="text-muted">({{ c.get_section_count }} section{{ c.get_section_count|pluralize }})</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Sections -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Select Sections</h5>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-light" id="btnAllSections">All</button>
+                                    <button type="button" class="btn btn-sm btn-outline-light" id="btnNoneSections">None</button>
+                                </div>
+                            </div>
+                            <div class="card-body" id="sectionContainer" style="max-height: 300px; overflow-y: auto;">
+                                {% if form.sections.errors %}<div class="alert alert-danger py-1 px-2 mb-2" id="sectionErrors">{{ form.sections.errors.0 }}</div>{% endif %}
+                                <p class="text-muted mb-0" id="sectionPlaceholder">Select one or more classes to see their sections.</p>
+                                <div id="sectionList"></div>
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="card shadow-sm border-primary mb-4">
+                            <div class="card-body text-center">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <h4 class="text-primary mb-0" id="selectedClassCount">0</h4>
+                                        <small class="text-muted">Classes Selected</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <h4 class="text-info mb-0" id="selectedSectionCount">0</h4>
+                                        <small class="text-muted">Sections Selected</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg px-5"><i class="bi bi-check-circle"></i> Create Exam</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var classSectionsMap = {{ class_sections_json|safe }};
+
+    var classChecks = document.querySelectorAll('.class-check');
+    var sectionList = document.getElementById('sectionList');
+    var sectionPlaceholder = document.getElementById('sectionPlaceholder');
+    var selectedClassCount = document.getElementById('selectedClassCount');
+    var selectedSectionCount = document.getElementById('selectedSectionCount');
+
+    // Track which sections were previously selected (from form POST data)
+    var previouslySelected = new Set();
+    {% for val in form.sections.value %}
+    previouslySelected.add('{{ val }}');
+    {% endfor %}
+
+    function getSelectedClassIds() {
+        var ids = [];
+        classChecks.forEach(function(cb) {
+            if (cb.checked) ids.push(cb.dataset.classid);
+        });
+        return ids;
+    }
+
+    function rebuildSections() {
+        var classIds = getSelectedClassIds();
+        selectedClassCount.textContent = classIds.length;
+
+        if (classIds.length === 0) {
+            sectionList.innerHTML = '';
+            sectionPlaceholder.style.display = '';
+            selectedSectionCount.textContent = '0';
+            return;
+        }
+        sectionPlaceholder.style.display = 'none';
+
+        var html = '';
+        classIds.forEach(function(cid) {
+            var secs = classSectionsMap[cid] || [];
+            if (secs.length === 0) return;
+            var className = '';
+            classChecks.forEach(function(cb) {
+                if (cb.dataset.classid === cid) className = cb.nextElementSibling.querySelector('strong').textContent;
+            });
+            html += '<div class="mb-2"><span class="badge bg-secondary mb-1">' + className + '</span>';
+            secs.forEach(function(s) {
+                var isChecked = previouslySelected.has(String(s.id)) ? ' checked' : '';
+                html += '<div class="form-check ms-3"><input type="checkbox" name="sections" value="' + s.id +
+                         '" class="form-check-input section-check" id="sec_' + s.id + '"' + isChecked +
+                         '><label class="form-check-label" for="sec_' + s.id + '">' + s.name + '</label></div>';
+            });
+            html += '</div>';
+        });
+
+        sectionList.innerHTML = html;
+        updateSectionCount();
+
+        document.querySelectorAll('.section-check').forEach(function(cb) {
+            cb.addEventListener('change', updateSectionCount);
+        });
+    }
+
+    function updateSectionCount() {
+        var count = document.querySelectorAll('.section-check:checked').length;
+        selectedSectionCount.textContent = count;
+    }
+
+    classChecks.forEach(function(cb) {
+        cb.addEventListener('change', rebuildSections);
+    });
+
+    // Select All / None for Classes
+    document.getElementById('btnAllClasses').addEventListener('click', function() {
+        classChecks.forEach(function(cb) { cb.checked = true; });
+        rebuildSections();
+        // Auto-select all sections too
+        setTimeout(function() {
+            document.querySelectorAll('.section-check').forEach(function(cb) { cb.checked = true; });
+            updateSectionCount();
+        }, 50);
+    });
+    document.getElementById('btnNoneClasses').addEventListener('click', function() {
+        classChecks.forEach(function(cb) { cb.checked = false; });
+        rebuildSections();
+    });
+
+    // Select All / None for Sections
+    document.getElementById('btnAllSections').addEventListener('click', function() {
+        document.querySelectorAll('.section-check').forEach(function(cb) { cb.checked = true; });
+        updateSectionCount();
+    });
+    document.getElementById('btnNoneSections').addEventListener('click', function() {
+        document.querySelectorAll('.section-check').forEach(function(cb) { cb.checked = false; });
+        updateSectionCount();
+    });
+
+    // Initial build if classes were already selected
+    rebuildSections();
+});
+</script>
+{% endblock %}
