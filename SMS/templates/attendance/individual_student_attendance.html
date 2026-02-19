@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container py-4">
@@ -8,7 +9,7 @@
             <p class="text-muted">{{ student.section.class_obj.name }} - Section {{ student.section.name }}</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="{% url 'attendance:bulk_student_attendance' student.section.id %}" class="btn btn-outline-secondary">
+            <a href="{% sb_url 'attendance:bulk_student_attendance' student.section.id %}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Section Attendance
             </a>
         </div>

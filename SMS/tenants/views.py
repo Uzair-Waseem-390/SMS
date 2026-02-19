@@ -16,6 +16,7 @@ from .forms import (
     BranchManagerForm
 )
 from accounts.utils import has_school_setup
+from decimal import Decimal
 
 User = get_user_model()
 
@@ -128,6 +129,9 @@ def handle_step2(request):
         # Store branch details in session
         branches = []
         for i in range(1, num_branches + 1):
+            yearly_amt = form.cleaned_data.get(f'branch_{i}_yearly_amount')
+            yearly_inst = form.cleaned_data.get(f'branch_{i}_yearly_installments')
+            monthly_amt = form.cleaned_data.get(f'branch_{i}_monthly_amount')
             branch_info = {
                 'temp_id': i,
                 'name': form.cleaned_data[f'branch_{i}_name'],
@@ -135,6 +139,10 @@ def handle_step2(request):
                 'address': form.cleaned_data[f'branch_{i}_address'],
                 'phone': form.cleaned_data[f'branch_{i}_phone'],
                 'email': form.cleaned_data[f'branch_{i}_email'],
+                'fee_frequency': form.cleaned_data.get(f'branch_{i}_fee_frequency', 'monthly'),
+                'monthly_amount': str(monthly_amt) if monthly_amt else None,
+                'yearly_amount': str(yearly_amt) if yearly_amt else None,
+                'yearly_installments': yearly_inst,
             }
             branches.append(branch_info)
         
@@ -222,6 +230,20 @@ def handle_step3(request):
                     manager_temp_password=manager_password,
                     is_main_branch=(i == 0)  # First branch is main branch
                 )
+
+                # Create fee structure for this branch
+                from finance.models import BranchFeeStructure
+                freq = branch_info.get('fee_frequency', 'monthly')
+                fee_kwargs = {
+                    'branch': branch, 'school': school,
+                    'frequency': freq, 'is_active': True,
+                }
+                if freq == 'monthly':
+                    fee_kwargs['monthly_amount'] = Decimal(branch_info['monthly_amount']) if branch_info.get('monthly_amount') else None
+                else:
+                    fee_kwargs['yearly_amount'] = Decimal(branch_info['yearly_amount']) if branch_info.get('yearly_amount') else None
+                    fee_kwargs['yearly_installments'] = branch_info.get('yearly_installments')
+                BranchFeeStructure.objects.create(**fee_kwargs)
             
             # Clear session data
             request.session.pop('setup_step', None)

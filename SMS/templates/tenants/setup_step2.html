@@ -64,9 +64,35 @@
                                                 <div class="col-md-6 mb-3">
                                                     {{ field|as_crispy_field }}
                                                 </div>
-                                    {% elif '_email' in field.name %}
+                                    {% elif '_email' in field.name and '_fee_' not in field.name %}
                                                 <div class="col-md-6 mb-3">
                                                     {{ field|as_crispy_field }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Fee Structure Section -->
+                                            <div class="mt-3 p-3 bg-light rounded border">
+                                                <h6 class="text-primary"><i class="bi bi-currency-exchange"></i> Fee Structure</h6>
+                                    {% elif '_fee_frequency' in field.name %}
+                                                <div class="row">
+                                                    <div class="col-md-4 mb-3">
+                                                        {{ field|as_crispy_field }}
+                                                    </div>
+                                    {% elif '_monthly_amount' in field.name %}
+                                                    <div class="col-md-4 mb-3 monthly-wrapper" data-branch="{{ field.name|slice:"7:8" }}">
+                                                        {{ field|as_crispy_field }}
+                                                    </div>
+                                    {% elif '_yearly_amount' in field.name %}
+                                                    <div class="col-md-4 mb-3 yearly-wrapper" data-branch="{{ field.name|slice:"7:8" }}" style="display:none;">
+                                                        {{ field|as_crispy_field }}
+                                                    </div>
+                                    {% elif '_yearly_installments' in field.name %}
+                                                    <div class="col-md-4 mb-3 yearly-wrapper" data-branch="{{ field.name|slice:"7:8" }}" style="display:none;">
+                                                        {{ field|as_crispy_field }}
+                                                    </div>
+                                                </div>
+                                                <div class="yearly-wrapper" data-branch="{{ field.name|slice:"7:8" }}" style="display:none;">
+                                                    <p class="text-muted mb-0"><small><i class="bi bi-calculator"></i> Installment amount will be auto-calculated.</small></p>
                                                 </div>
                                             </div>
                                         </div>
@@ -93,8 +119,24 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Step 2 loaded');
+document.addEventListener('DOMContentLoaded', function() {
+    function toggleFeeFields(branchNum) {
+        const sel = document.querySelector(`.fee-frequency-select[data-branch="${branchNum}"]`);
+        if (!sel) return;
+        const freq = sel.value;
+        document.querySelectorAll(`.monthly-wrapper[data-branch="${branchNum}"]`).forEach(el => {
+            el.style.display = freq === 'monthly' ? '' : 'none';
+        });
+        document.querySelectorAll(`.yearly-wrapper[data-branch="${branchNum}"]`).forEach(el => {
+            el.style.display = freq === 'yearly' ? '' : 'none';
+        });
+    }
+
+    document.querySelectorAll('.fee-frequency-select').forEach(sel => {
+        const bn = sel.getAttribute('data-branch');
+        sel.addEventListener('change', () => toggleFeeFields(bn));
+        toggleFeeFields(bn);
     });
+});
 </script>
 {% endblock %}

@@ -143,6 +143,16 @@ class Student(models.Model):
         null=True,
         blank=True
     )
+
+    # Scholarship
+    scholarship = models.ForeignKey(
+        'finance.Scholarship',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='students',
+        verbose_name="Scholarship"
+    )
     
     class Meta:
         verbose_name = "Student"

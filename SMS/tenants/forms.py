@@ -168,12 +168,52 @@ class BranchSetupForm(forms.Form):
                 }),
                 label=f'Branch {i} Email'
             )
+
+            # Fee Structure fields
+            self.fields[f'branch_{i}_fee_frequency'] = forms.ChoiceField(
+                choices=[('monthly', 'Monthly'), ('yearly', 'Yearly')],
+                initial='monthly',
+                widget=forms.Select(attrs={
+                    'class': 'form-select fee-frequency-select',
+                    'data-branch': str(i),
+                }),
+                label=f'Branch {i} Fee Frequency'
+            )
+
+            self.fields[f'branch_{i}_monthly_amount'] = forms.DecimalField(
+                required=False, min_value=0,
+                widget=forms.NumberInput(attrs={
+                    'placeholder': 'Monthly fee in PKR',
+                    'class': 'form-control monthly-field',
+                    'data-branch': str(i),
+                }),
+                label=f'Branch {i} Monthly Fee (PKR)'
+            )
+
+            self.fields[f'branch_{i}_yearly_amount'] = forms.DecimalField(
+                required=False, min_value=0,
+                widget=forms.NumberInput(attrs={
+                    'placeholder': 'Yearly fee in PKR',
+                    'class': 'form-control yearly-field',
+                    'data-branch': str(i),
+                }),
+                label=f'Branch {i} Yearly Fee (PKR)'
+            )
+
+            self.fields[f'branch_{i}_yearly_installments'] = forms.IntegerField(
+                required=False, min_value=1, max_value=12,
+                widget=forms.NumberInput(attrs={
+                    'placeholder': 'No. of installments',
+                    'class': 'form-control yearly-field',
+                    'data-branch': str(i),
+                }),
+                label=f'Branch {i} No. of Installments'
+            )
     
     def clean(self):
         """Additional validation for branch fields."""
         cleaned_data = super().clean()
-        
-        # Validate that branch names are unique
+
         branch_names = []
         for i in range(1, self.num_branches + 1):
             name = cleaned_data.get(f'branch_{i}_name')
@@ -181,7 +221,17 @@ class BranchSetupForm(forms.Form):
                 if name in branch_names:
                     self.add_error(f'branch_{i}_name', f'Branch {i} name must be unique.')
                 branch_names.append(name)
-        
+
+            freq = cleaned_data.get(f'branch_{i}_fee_frequency')
+            if freq == 'monthly':
+                if not cleaned_data.get(f'branch_{i}_monthly_amount'):
+                    self.add_error(f'branch_{i}_monthly_amount', 'Monthly fee amount is required.')
+            elif freq == 'yearly':
+                if not cleaned_data.get(f'branch_{i}_yearly_amount'):
+                    self.add_error(f'branch_{i}_yearly_amount', 'Yearly fee amount is required.')
+                if not cleaned_data.get(f'branch_{i}_yearly_installments'):
+                    self.add_error(f'branch_{i}_yearly_installments', 'Number of installments is required.')
+
         return cleaned_data
 
 

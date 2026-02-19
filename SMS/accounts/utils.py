@@ -1,8 +1,33 @@
 # accounts/utils.py
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 from tenants.models import SchoolTenant, Branch
 
 User = get_user_model()
+
+
+def get_school_and_branch(request):
+    """
+    Get school and branch from URL context (middleware) first,
+    falling back to user relationships.
+    """
+    school = getattr(request, 'current_school', None)
+    branch = getattr(request, 'current_branch', None)
+    if school and branch:
+        return school, branch
+    return get_user_school(request.user, request), get_user_branch(request.user, request)
+
+
+def branch_url(request, viewname, **kwargs):
+    """Reverse a URL, injecting school_id and branch_id from request context."""
+    school = getattr(request, 'current_school', None)
+    branch = getattr(request, 'current_branch', None)
+    if not school or not branch:
+        school, branch = get_school_and_branch(request)
+    if school and branch:
+        kwargs['school_id'] = school.id
+        kwargs['branch_id'] = branch.id
+    return reverse(viewname, kwargs=kwargs)
 
 def has_school_setup(user):
     """
@@ -31,16 +56,15 @@ def has_school_setup(user):
         return False
 
 
-def get_user_school(user):
+def get_user_school(user, request=None):
     """
     Get the school associated with a user.
-    
-    Args:
-        user: User instance
-    
-    Returns:
-        SchoolTenant or None: The user's school if exists
+    Prefers the URL-provided school (from middleware) when available.
     """
+    if request:
+        url_school = getattr(request, 'current_school', None)
+        if url_school:
+            return url_school
     try:
         if user.user_type == 'principal':
             return user.owned_school
@@ -75,21 +99,17 @@ def get_user_branches(user):
 def get_user_branch(user, request=None):
     """
     Get the branch associated with a user.
-    
-    For principals with multiple branches, supports branch selection via:
-    - request.GET.get('branch_id')
-    - request.session.get('academics_branch_id')
-    
-    Args:
-        user: User instance
-        request: Optional HttpRequest for branch selection (principals with multiple branches)
-    
-    Returns:
-        Branch or None: The user's branch if exists
+    Prefers the URL-provided branch (from middleware) when available.
+    Falls back to user relationships.
     """
+    if request:
+        url_branch = getattr(request, 'current_branch', None)
+        if url_branch:
+            return url_branch
+
     if not user.is_authenticated:
         return None
-    
+
     try:
         if user.user_type == 'principal':
             school = get_user_school(user)
@@ -98,7 +118,6 @@ def get_user_branch(user, request=None):
             branches = school.branches.filter(is_active=True)
             if not branches.exists():
                 return None
-            # Branch selection for principals with multiple branches
             if request and branches.count() > 1:
                 branch_id = request.GET.get('branch_id') or request.session.get('academics_branch_id')
                 if branch_id:
@@ -110,7 +129,6 @@ def get_user_branch(user, request=None):
         elif user.user_type == 'manager':
             return getattr(user, 'managed_branch', None)
         elif user.user_type == 'teacher':
-            # Teacher branch from UserRole (rbac)
             from rbac.models import UserRole
             ur = UserRole.objects.filter(
                 user=user, is_active=True

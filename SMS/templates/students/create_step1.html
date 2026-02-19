@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% load static %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container py-5">
@@ -50,7 +51,7 @@ $(document).ready(function() {
         var classId = $(this).val();
         if (classId) {
             $.ajax({
-                url: '{% url "students:get_sections" %}',
+                url: '{% sb_url "students:get_sections" %}',
                 data: {
                     'class_id': classId
                 },

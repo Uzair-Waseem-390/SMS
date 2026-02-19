@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container py-5">
@@ -26,7 +27,7 @@
                         {% csrf_token %}
                         {{ form|crispy }}
                         <div class="d-flex justify-content-between mt-4">
-                            <a href="{% url 'academics:section_list' %}" class="btn btn-secondary btn-lg">
+                            <a href="{% sb_url 'academics:section_list' %}" class="btn btn-secondary btn-lg">
                                 <i class="bi bi-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary btn-lg">

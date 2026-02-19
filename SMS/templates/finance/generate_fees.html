@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-plus-circle"></i> Generate Fees</h2>
+                <a href="{% sb_url 'finance:fee_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+            </div>
+
+            {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endif %}
+
+            <!-- Fee Structure Summary (for academic fees) -->
+            <div class="card shadow-sm mb-4" id="structure-card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-gear"></i> Active Fee Structure: {{ branch.name }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if fee_structure %}
+                    <div class="row">
+                        <div class="col-md-4"><strong>Frequency:</strong> {{ fee_structure.get_frequency_display }}</div>
+                        <div class="col-md-4"><strong>Per Fee Amount:</strong> PKR {{ fee_structure.per_fee_amount|floatformat:0 }}</div>
+                        {% if fee_structure.frequency == 'yearly' %}
+                        <div class="col-md-4"><strong>Installments:</strong> {{ fee_structure.yearly_installments }}</div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-warning mb-0"><i class="bi bi-exclamation-triangle"></i> No active fee structure. You can still generate <strong>special fees</strong>.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="alert alert-info" id="info-academic">
+                        <i class="bi bi-info-circle"></i> <strong>Academic Fee:</strong> Uses the branch fee structure. Scholarship deductions are applied automatically.
+                    </div>
+                    <div class="alert alert-warning" id="info-special" style="display:none;">
+                        <i class="bi bi-info-circle"></i> <strong>Special Fee:</strong> Custom amount for exams, lab fees, sports, etc. <strong>No scholarship deduction.</strong> Can be edited or deleted per student.
+                    </div>
+                    {% crispy form %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const classSelect = document.getElementById('id_class_filter');
+    const sectionSelect = document.getElementById('id_section_filter');
+    const feeTypeRadios = document.querySelectorAll('input[name="fee_type"]');
+    const specialFields = document.getElementById('special-fields');
+    const installmentWrap = document.getElementById('installment-wrap');
+    const structureCard = document.getElementById('structure-card');
+    const infoAcademic = document.getElementById('info-academic');
+    const infoSpecial = document.getElementById('info-special');
+
+    function toggleFeeType() {
+        const val = document.querySelector('input[name="fee_type"]:checked');
+        if (!val) return;
+        const isSpecial = val.value === 'special';
+
+        if (specialFields) specialFields.style.display = isSpecial ? '' : 'none';
+        if (installmentWrap) installmentWrap.style.display = isSpecial ? 'none' : '';
+        if (structureCard) structureCard.style.display = isSpecial ? 'none' : '';
+        if (infoAcademic) infoAcademic.style.display = isSpecial ? 'none' : '';
+        if (infoSpecial) infoSpecial.style.display = isSpecial ? '' : 'none';
+    }
+
+    feeTypeRadios.forEach(r => r.addEventListener('change', toggleFeeType));
+    toggleFeeType();
+
+    // Dynamic section loading
+    if (classSelect && sectionSelect) {
+        function loadSections(classId) {
+            sectionSelect.innerHTML = '<option value="">All Sections</option>';
+            sectionSelect.disabled = true;
+
+            let url = `{% sb_url 'finance:api_sections_for_class' %}`;
+            if (classId) url += `?class_id=${classId}`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    data.sections.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.name;
+                        sectionSelect.appendChild(opt);
+                    });
+                    sectionSelect.disabled = false;
+                });
+        }
+
+        classSelect.addEventListener('change', function() {
+            loadSections(this.value);
+        });
+
+        loadSections(classSelect.value);
+    }
+});
+</script>
+{% endblock %}

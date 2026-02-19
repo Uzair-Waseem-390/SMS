@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from accounts.utils import branch_url
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, HTML, Fieldset
 from crispy_forms.bootstrap import FormActions, TabHolder, Tab
@@ -140,10 +141,11 @@ class StaffCreationStep1Form(forms.Form):
 class StaffCreationStep2Form(forms.Form):
     """Step 2: Account credentials + type-specific fields (teacher subjects/incharge)."""
 
-    def __init__(self, *args, staff_data=None, branch=None, **kwargs):
+    def __init__(self, *args, staff_data=None, branch=None, request=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.staff_data = staff_data or {}
         self.branch = branch
+        self.request = request
 
         first_name = self.staff_data.get('first_name', '')
         last_name = self.staff_data.get('last_name', '')
@@ -215,9 +217,9 @@ class StaffCreationStep2Form(forms.Form):
         if employee_type == 'accountant' and 'certification' in self.fields:
             layout_fields.append(Fieldset('Accountant Details', 'certification'))
 
-        from django.urls import reverse
+        back_url = branch_url(self.request, 'staff:create_staff_wizard') if self.request else '#'
         layout_fields.append(HTML(f"""<div class="d-flex justify-content-between mt-3">
-            <a href="{reverse('staff:create_staff_wizard')}?back=1" class="btn btn-secondary btn-lg"><i class="bi bi-arrow-left"></i> Back</a>
+            <a href="{back_url}?back=1" class="btn btn-secondary btn-lg"><i class="bi bi-arrow-left"></i> Back</a>
         </div>"""))
         layout_fields.append(FormActions(Submit('finish', 'Finish \u2192 Create Staff Account', css_class='btn btn-success btn-lg w-100 py-3 mt-2')))
         self.helper.layout = Layout(*layout_fields)

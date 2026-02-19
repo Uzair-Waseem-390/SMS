@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container py-5">
@@ -40,7 +41,7 @@
                         </div>
                         {% endif %}
                         <button type="submit" class="btn btn-info btn-lg text-white"><i class="bi bi-megaphone"></i> Publish Results</button>
-                        <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
+                        <a href="{% sb_url 'exams:exam_detail' exam.id %}" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
                     </form>
                 </div>
             </div>

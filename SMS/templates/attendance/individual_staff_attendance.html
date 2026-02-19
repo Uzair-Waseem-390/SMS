@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container py-4">
@@ -8,7 +9,7 @@
             <p class="text-muted">Staff Member: {{ staff_user.get_full_name }}</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="{% url 'attendance:bulk_staff_attendance' %}" class="btn btn-outline-secondary">
+            <a href="{% sb_url 'attendance:bulk_staff_attendance' %}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Staff Attendance
             </a>
         </div>

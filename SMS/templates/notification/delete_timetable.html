@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container py-5">
@@ -19,7 +20,7 @@
                     <form method="post">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-lg"><i class="bi bi-trash"></i> Delete</button>
-                        <a href="{% url 'notification:timetable_list' %}" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
+                        <a href="{% sb_url 'notification:timetable_list' %}" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
                     </form>
                 </div>
             </div>

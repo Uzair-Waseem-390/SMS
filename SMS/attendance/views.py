@@ -45,7 +45,7 @@ def _can_mark_section_attendance(user, section):
 def bulk_student_attendance(request, section_id):
     """Mark attendance for all students in a section at once."""
     branch = get_user_branch(request.user, request)
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not branch or not school:
         messages.error(request, "No branch/school associated with your account.")
         return _get_dashboard_redirect()
@@ -116,7 +116,7 @@ def bulk_student_attendance(request, section_id):
 def individual_student_attendance(request, student_id):
     """View and edit attendance for one specific student."""
     branch = get_user_branch(request.user, request)
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not branch or not school:
         return _get_dashboard_redirect()
 
@@ -170,7 +170,7 @@ def individual_student_attendance(request, student_id):
 def bulk_staff_attendance(request):
     """Mark attendance for all staff members at once."""
     branch = get_user_branch(request.user, request)
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not branch or not school:
         messages.error(request, "No branch/school associated with your account.")
         return _get_dashboard_redirect()
@@ -259,7 +259,7 @@ def bulk_staff_attendance(request):
 def individual_staff_attendance(request, user_id):
     """View and edit attendance for one specific staff member."""
     branch = get_user_branch(request.user, request)
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not branch or not school:
         return _get_dashboard_redirect()
 
@@ -384,7 +384,7 @@ def student_attendance_report(request, section_id):
 def staff_attendance_report(request):
     """Attendance report/history for all staff in a branch."""
     branch = get_user_branch(request.user, request)
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not branch or not school:
         return _get_dashboard_redirect()
 

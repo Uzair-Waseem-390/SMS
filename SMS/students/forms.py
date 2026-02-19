@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from accounts.utils import branch_url
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, HTML, Fieldset
 from crispy_forms.bootstrap import FormActions, TabHolder, Tab
@@ -133,6 +134,14 @@ class StudentCreationStep1Form(forms.Form):
         }),
         label="Address"
     )
+
+    scholarship = forms.ModelChoiceField(
+        queryset=None,
+        required=False,
+        empty_label="-- No Scholarship --",
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label="Scholarship"
+    )
     
     def __init__(self, *args, branch=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -143,6 +152,13 @@ class StudentCreationStep1Form(forms.Form):
             self.fields['class_choice'].queryset = Class.objects.filter(
                 branch=branch, is_active=True
             ).order_by('numeric_level', 'name')
+            from finance.models import Scholarship as ScholarshipModel
+            self.fields['scholarship'].queryset = ScholarshipModel.objects.filter(
+                branch=branch, is_active=True
+            )
+        else:
+            from finance.models import Scholarship as ScholarshipModel
+            self.fields['scholarship'].queryset = ScholarshipModel.objects.none()
         
         # For GET (initial load) keep sections empty; for POST bind, populate based on selected class
         self.fields['section_choice'].queryset = Section.objects.none()
@@ -201,6 +217,7 @@ class StudentCreationStep1Form(forms.Form):
                     Column('email', css_class='form-group mb-3 col-md-4'),
                 ),
                 'address',
+                'scholarship',
             ),
             
             FormActions(
@@ -224,9 +241,10 @@ class StudentCreationStep2Form(forms.Form):
     Step 2: Review and edit student/parent credentials.
     """
     
-    def __init__(self, *args, student_data=None, **kwargs):
+    def __init__(self, *args, student_data=None, request=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.student_data = student_data or {}
+        self.request = request
         
         # Student Account Fields
         self.fields['student_email'] = forms.EmailField(
@@ -313,7 +331,7 @@ class StudentCreationStep2Form(forms.Form):
             widget=forms.Select(attrs={'class': 'form-select'}),
             label="Relationship to Student"
         )
-        
+
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
@@ -352,19 +370,21 @@ class StudentCreationStep2Form(forms.Form):
                 ),
             ),
             
-            HTML(f"""
-                <div class="d-flex justify-content-between mt-4">
-                    <a href="{reverse('students:create_student_wizard')}?back=1" class="btn btn-secondary btn-lg">
-                        <i class="bi bi-arrow-left"></i> Back
-                    </a>
-                </div>
-            """),
+            HTML(self._back_link_html()),
             FormActions(
-                Submit('finish', 'Finish → Create Student & Parent', 
+                Submit('finish', 'Finish → Create Student & Parent',
                        css_class='btn btn-success btn-lg w-100 py-3'),
             )
         )
-    
+
+    def _back_link_html(self):
+        """Back link with school/branch-scoped URL."""
+        if self.request:
+            url = branch_url(self.request, 'students:create_student_wizard')
+        else:
+            url = '#'
+        return f'<div class="d-flex justify-content-between mt-4"><a href="{url}?back=1" class="btn btn-secondary btn-lg"><i class="bi bi-arrow-left"></i> Back</a></div>'
+
     def generate_student_email(self):
         """Generate email for student."""
         first = self.student_data.get('first_name', 'student').lower()
@@ -476,7 +496,7 @@ class StudentEditForm(forms.ModelForm):
             'alternate_phone', 'address', 'city', 'postal_code',
             'blood_group', 'medical_conditions', 'emergency_contact_name',
             'emergency_contact_phone', 'profile_picture', 'roll_number',
-            'is_active'
+            'scholarship', 'is_active'
         ]
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),

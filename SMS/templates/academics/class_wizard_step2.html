@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container py-5">
@@ -76,7 +77,7 @@
                         {% endfor %}
                         
                         <div class="d-flex justify-content-between mt-4">
-                            <a href="{% url 'academics:create_class_wizard' %}?back=1" class="btn btn-secondary btn-lg">
+                            <a href="{% sb_url 'academics:create_class_wizard' %}?back=1" class="btn btn-secondary btn-lg">
                                 <i class="bi bi-arrow-left"></i> Back
                             </a>
                             <button type="submit" class="btn btn-success btn-lg">

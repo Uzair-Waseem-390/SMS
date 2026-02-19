@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -7,8 +8,8 @@
             <h2><i class="bi bi-calendar-week"></i> Timetables</h2>
         </div>
         <div class="col-md-6 text-end">
-            <a href="{% url 'notification:notification_list' %}" class="btn btn-outline-primary me-2"><i class="bi bi-bell"></i> Notifications</a>
-            <a href="{% url 'notification:create_timetable' %}" class="btn btn-primary"><i class="bi bi-upload"></i> Upload Timetable</a>
+            <a href="{% sb_url 'notification:notification_list' %}" class="btn btn-outline-primary me-2"><i class="bi bi-bell"></i> Notifications</a>
+            <a href="{% sb_url 'notification:create_timetable' %}" class="btn btn-primary"><i class="bi bi-upload"></i> Upload Timetable</a>
         </div>
     </div>
 
@@ -60,8 +61,8 @@
                         {% if tt.image %}
                         <a href="{{ tt.image.url }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View Full</a>
                         {% endif %}
-                        <a href="{% url 'notification:edit_timetable' tt.id %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
-                        <a href="{% url 'notification:delete_timetable' tt.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        <a href="{% sb_url 'notification:edit_timetable' tt.id %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Edit</a>
+                        <a href="{% sb_url 'notification:delete_timetable' tt.id %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
                     </div>
                 </div>
             </div>
@@ -72,7 +73,7 @@
     <div class="alert alert-info text-center py-5">
         <i class="bi bi-calendar-x fs-1"></i>
         <h4 class="mt-3">No Timetables Found</h4>
-        <a href="{% url 'notification:create_timetable' %}" class="btn btn-primary mt-3"><i class="bi bi-upload"></i> Upload First Timetable</a>
+        <a href="{% sb_url 'notification:create_timetable' %}" class="btn btn-primary mt-3"><i class="bi bi-upload"></i> Upload First Timetable</a>
     </div>
     {% endif %}
 </div>

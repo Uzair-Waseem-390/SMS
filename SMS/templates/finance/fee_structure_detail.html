@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-gear"></i> Fee Structure</h2>
+        <div>
+            {% if fee_structure %}
+            <a href="{% sb_url 'finance:edit_fee_structure' fee_structure.id %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit Active</a>
+            {% endif %}
+            <a href="{% sb_url 'finance:create_fee_structure' %}" class="btn btn-outline-primary"><i class="bi bi-plus-circle"></i> New</a>
+            <a href="{% sb_url 'finance:dashboard' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+        </div>
+    </div>
+
+    {% if fee_structure %}
+    <div class="card shadow-sm mb-4 border-success">
+        <div class="card-header bg-success text-white"><h5 class="mb-0">Active Fee Structure</h5></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-2"><strong>Frequency:</strong> {{ fee_structure.get_frequency_display }}</div>
+                {% if fee_structure.frequency == 'monthly' %}
+                <div class="col-md-4 mb-2"><strong>Monthly Amount:</strong> PKR {{ fee_structure.monthly_amount|floatformat:2 }}</div>
+                {% else %}
+                <div class="col-md-4 mb-2"><strong>Yearly Amount:</strong> PKR {{ fee_structure.yearly_amount|floatformat:2 }}</div>
+                <div class="col-md-4 mb-2"><strong>Installments:</strong> {{ fee_structure.yearly_installments }}</div>
+                <div class="col-md-4 mb-2"><strong>Per Installment:</strong> PKR {{ fee_structure.installment_amount|floatformat:2 }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center py-4">
+        <i class="bi bi-exclamation-triangle fs-1"></i>
+        <h4 class="mt-3">No Active Fee Structure</h4>
+        <a href="{% sb_url 'finance:create_fee_structure' %}" class="btn btn-primary mt-2">Create Fee Structure</a>
+    </div>
+    {% endif %}
+
+    {% if all_structures %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-light"><h5 class="mb-0">All Fee Structures (History)</h5></div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead><tr><th>Frequency</th><th>Amount</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody>
+                    {% for fs in all_structures %}
+                    <tr class="{% if fs.is_active %}table-success{% endif %}">
+                        <td>{{ fs.get_frequency_display }}</td>
+                        <td>{% if fs.frequency == 'monthly' %}PKR {{ fs.monthly_amount|floatformat:0 }}/mo{% else %}PKR {{ fs.yearly_amount|floatformat:0 }}/yr ({{ fs.yearly_installments }} inst.){% endif %}</td>
+                        <td>{% if fs.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+                        <td>{{ fs.created_at|date:"M d, Y" }}</td>
+                        <td><a href="{% sb_url 'finance:edit_fee_structure' fs.id %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

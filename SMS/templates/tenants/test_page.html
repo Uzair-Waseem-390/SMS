@@ -65,12 +65,18 @@
                                                             <i class="bi bi-person"></i> Manager: {{ branch.manager.email }}
                                                         </small>
                                                     </div>
-                                                    {% if user.user_type == 'principal' %}
-                                                        <a href="{% url 'tenants:manage_branch' branch.id %}" 
-                                                           class="btn btn-sm btn-outline-primary">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{% url 'finance:dashboard' school_id=school.id branch_id=branch.id %}"
+                                                           class="btn btn-success">
+                                                            <i class="bi bi-box-arrow-in-right"></i> Enter
+                                                        </a>
+                                                        {% if user.user_type == 'principal' %}
+                                                        <a href="{% url 'tenants:manage_branch' branch.id %}"
+                                                           class="btn btn-outline-primary">
                                                             <i class="bi bi-pencil"></i> Manage
                                                         </a>
-                                                    {% endif %}
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
                                             </div>
                                         {% endfor %}

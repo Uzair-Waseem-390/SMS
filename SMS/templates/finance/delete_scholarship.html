@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-danger">
+                <div class="card-header bg-danger text-white"><h4 class="mb-0"><i class="bi bi-trash"></i> Deactivate Scholarship</h4></div>
+                <div class="card-body text-center p-4">
+                    <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">{{ scholarship.name }}</h5>
+                    <p class="text-muted">{{ scholarship.get_scholarship_type_display }} - {% if scholarship.scholarship_type == 'percentage' %}{{ scholarship.percentage_amount }}%{% else %}PKR {{ scholarship.fixed_amount }}{% endif %}</p>
+                    <p>{{ scholarship.students.count }} student(s) currently linked.</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-lg"><i class="bi bi-trash"></i> Deactivate</button>
+                        <a href="{% sb_url 'finance:scholarship_list' %}" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

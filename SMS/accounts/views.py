@@ -5,7 +5,18 @@ from django.contrib import messages
 from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
-from accounts.utils import has_school_setup
+from accounts.utils import has_school_setup, get_user_school, get_user_branch
+
+
+def _login_redirect(user, request):
+    """Determine the post-login redirect URL with school/branch context."""
+    if not has_school_setup(user):
+        return redirect('tenants:setup_wizard')
+    school = get_user_school(user, request)
+    branch = get_user_branch(user, request)
+    if school and branch:
+        return redirect('finance:dashboard', school_id=school.id, branch_id=branch.id)
+    return redirect('tenants:test_page')
 
 
 from .forms import (
@@ -106,10 +117,7 @@ def login_view(request):
     Checks if user is active and payment verified before allowing login.
     """
     if request.user.is_authenticated:
-        # return redirect('accounts:test_page')
-        if not has_school_setup(request.user):
-            return redirect('tenants:setup_wizard')
-        return redirect('tenants:test_page')
+        return _login_redirect(request.user, request)
     
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
@@ -122,11 +130,7 @@ def login_view(request):
                 if user.can_login():
                     login(request, user)
                     messages.success(request, f'Welcome back, {user.full_name}!')
-                    # return redirect('accounts:test_page')
-                    if not has_school_setup(user):
-                        return redirect('tenants:setup_wizard')
-                    else:
-                        return redirect('tenants:test_page')
+                    return _login_redirect(user, request)
                 elif user.payment_verified and not user.is_active:
                     messages.warning(
                         request, 

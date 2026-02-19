@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -7,7 +8,7 @@
             <h2><i class="bi bi-pencil-square"></i> Enter Exam Results</h2>
             <p class="text-muted mb-0">{{ exam.name }} | {{ exam.subject.name }} | {{ exam.section }} | Total: {{ exam.total_marks }} | Pass: {{ exam.passing_marks }}</p>
         </div>
-        <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Exam</a>
+        <a href="{% sb_url 'exams:exam_detail' exam.id %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back to Exam</a>
     </div>
 
     {% if messages %}

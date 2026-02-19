@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-receipt"></i> Fee Detail</h2>
+            {% if fee.fee_type == 'special' %}
+            <span class="badge fs-6" style="background-color:#6f42c1;">Special Fee</span>
+            {% else %}
+            <span class="badge bg-primary fs-6">Academic Fee</span>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            {% if fee.fee_type == 'special' %}
+            <a href="{% sb_url 'finance:edit_special_fee' fee.id %}" class="btn btn-warning"><i class="bi bi-pencil"></i> Edit</a>
+            <a href="{% sb_url 'finance:delete_special_fee' fee.id %}" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</a>
+            {% endif %}
+            {% if fee.status != 'paid' %}
+            <a href="{% sb_url 'finance:record_payment' fee.id %}" class="btn btn-success"><i class="bi bi-cash"></i> Record Payment</a>
+            {% endif %}
+            <a href="{% sb_url 'finance:fee_receipt' fee.id %}" class="btn btn-info text-white"><i class="bi bi-printer"></i> Print Receipt</a>
+            <a href="{% sb_url 'finance:fee_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="bi bi-person"></i> Student</h5></div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Name:</strong> {{ fee.student.full_name }}</p>
+                    <p class="mb-1"><strong>Admission #:</strong> {{ fee.student.admission_number }}</p>
+                    <p class="mb-1"><strong>Class:</strong> {{ fee.student.section.class_obj.name }} - {{ fee.student.section.name }}</p>
+                    <p class="mb-0"><strong>Father:</strong> {{ fee.student.father_name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm {% if fee.status == 'paid' %}border-success{% elif fee.status == 'partial' %}border-warning{% else %}border-danger{% endif %}">
+                <div class="card-header {% if fee.status == 'paid' %}bg-success{% elif fee.status == 'partial' %}bg-warning{% else %}bg-danger{% endif %} text-white">
+                    <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Fee Info</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-2"><strong>Label:</strong> {{ fee.label|default:"--" }}</div>
+                        <div class="col-6 mb-2"><strong>Due Date:</strong> {{ fee.due_date|date:"M d, Y" }}</div>
+                        <div class="col-6 mb-2"><strong>Original Amount:</strong> PKR {{ fee.amount|floatformat:2 }}</div>
+                        <div class="col-6 mb-2"><strong>Scholarship:</strong> PKR {{ fee.scholarship_deduction|floatformat:2 }}</div>
+                        <div class="col-6 mb-2"><strong>Net Amount:</strong> <span class="fw-bold">PKR {{ fee.net_amount|floatformat:2 }}</span></div>
+                        <div class="col-6 mb-2"><strong>Paid:</strong> PKR {{ fee.amount_paid|floatformat:2 }}</div>
+                        <div class="col-6 mb-2"><strong>Balance:</strong> <span class="fw-bold text-danger">PKR {{ fee.balance|floatformat:2 }}</span></div>
+                        <div class="col-6 mb-2"><strong>Status:</strong>
+                            {% if fee.status == 'paid' %}<span class="badge bg-success">Paid</span>
+                            {% elif fee.status == 'partial' %}<span class="badge bg-warning">Partial</span>
+                            {% else %}<span class="badge bg-danger">Unpaid</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if fee.fee_type == 'academic' and fee.student.scholarship %}
+    <div class="card shadow-sm mb-4 border-info">
+        <div class="card-header bg-info text-white"><h5 class="mb-0"><i class="bi bi-award"></i> Scholarship</h5></div>
+        <div class="card-body">
+            <p class="mb-1"><strong>{{ fee.student.scholarship.name }}</strong></p>
+            <p class="mb-0">
+                {% if fee.student.scholarship.scholarship_type == 'percentage' %}
+                {{ fee.student.scholarship.percentage_amount }}% discount
+                {% else %}
+                PKR {{ fee.student.scholarship.fixed_amount|floatformat:0 }} fixed discount
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    {% elif fee.fee_type == 'special' %}
+    <div class="card shadow-sm mb-4 border-secondary">
+        <div class="card-header bg-secondary text-white"><h5 class="mb-0"><i class="bi bi-info-circle"></i> Special Fee</h5></div>
+        <div class="card-body">
+            <p class="mb-0">This is a special fee. <strong>Scholarships are not applied</strong> to special fees.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light"><h5 class="mb-0">Audit Info</h5></div>
+        <div class="card-body">
+            <div class="row text-muted">
+                <div class="col-md-4"><strong>Generated by:</strong> {{ fee.created_by.full_name|default:"--" }}</div>
+                <div class="col-md-4"><strong>Received by:</strong> {{ fee.received_by.full_name|default:"--" }} {% if fee.received_by_role %}({{ fee.received_by_role }}){% endif %}</div>
+                <div class="col-md-4"><strong>Paid on:</strong> {{ fee.paid_date|date:"M d, Y"|default:"--" }}</div>
+            </div>
+            {% if fee.notes %}<div class="mt-3"><strong>Notes:</strong><br>{{ fee.notes|linebreaks }}</div>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -14,7 +14,7 @@ from .forms import ExamBulkCreateForm, ExamEditForm
 from academics.models import Class, Section, Subject
 from students.models import Student
 from staff.models import Teacher
-from accounts.utils import get_user_branch, get_user_school, can_manage_academics
+from accounts.utils import get_user_branch, get_user_school, can_manage_academics, branch_url
 from rbac.services import require_principal_or_manager, require_principal_or_manager_or_permission
 from rbac.permissions import Permissions
 
@@ -58,7 +58,7 @@ def _can_view_student_results(user, student):
 @require_principal_or_manager_or_permission(Permissions.EXAM_VIEW.value)
 def exam_list(request):
     branch = get_user_branch(request.user, request)
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not branch or not school:
         return _dash()
 
@@ -106,7 +106,7 @@ def exam_list(request):
 @require_principal_or_manager()
 def create_exam(request):
     branch = get_user_branch(request.user, request)
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not branch or not school:
         return _dash()
 
@@ -139,7 +139,7 @@ def create_exam(request):
 
             sec_names = ', '.join(f"{s.class_obj.name}-{s.name}" for s in sections)
             messages.success(request, f'Exam "{cd["name"]}" created for {created} section(s): {sec_names}')
-            return redirect('exams:exam_list')
+            return redirect(branch_url(request, 'exams:exam_list'))
     else:
         form = ExamBulkCreateForm(branch=branch)
 
@@ -165,7 +165,7 @@ def create_exam(request):
 @require_principal_or_manager()
 def edit_exam(request, exam_id):
     branch = get_user_branch(request.user, request)
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not branch or not school:
         return _dash()
 
@@ -175,7 +175,7 @@ def edit_exam(request, exam_id):
         if form.is_valid():
             form.save()
             messages.success(request, f'Exam "{exam.name}" updated.')
-            return redirect('exams:exam_detail', exam_id=exam.id)
+            return redirect(branch_url(request, 'exams:exam_detail', exam_id=exam.id))
     else:
         form = ExamEditForm(instance=exam, branch=branch)
 
@@ -199,7 +199,7 @@ def delete_exam(request, exam_id):
             exam.is_active = False
             exam.save()
             messages.success(request, f'Exam "{exam.name}" deactivated.')
-        return redirect('exams:exam_list')
+        return redirect(branch_url(request, 'exams:exam_list'))
 
     siblings = exam.sibling_exams.select_related('section', 'class_obj') if exam.batch_id else []
 
@@ -303,7 +303,7 @@ def exam_attendance(request, exam_id):
             )
             saved += 1
         messages.success(request, f'Exam attendance saved for {saved} student(s).')
-        return redirect('exams:exam_attendance', exam_id=exam.id)
+        return redirect(branch_url(request, 'exams:exam_attendance', exam_id=exam.id))
 
     rows = []
     for s in students:
@@ -367,7 +367,7 @@ def exam_results_entry(request, exam_id):
             saved += 1
 
         messages.success(request, f'Results saved for {saved} student(s).')
-        return redirect('exams:exam_results_entry', exam_id=exam.id)
+        return redirect(branch_url(request, 'exams:exam_results_entry', exam_id=exam.id))
 
     rows = []
     for s in students:
@@ -405,7 +405,7 @@ def publish_results(request, exam_id):
             exam.is_published = True
             exam.save(update_fields=['is_published'])
             messages.success(request, f'Results for "{exam.name}" have been published.')
-        return redirect('exams:exam_detail', exam_id=exam.id)
+        return redirect(branch_url(request, 'exams:exam_detail', exam_id=exam.id))
 
     siblings = exam.sibling_exams.select_related('section', 'class_obj') if exam.batch_id else []
     return render(request, 'exams/publish_results.html', {

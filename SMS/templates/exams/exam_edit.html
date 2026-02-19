@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container py-5">
@@ -7,7 +8,7 @@
         <div class="col-lg-10">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="bi bi-pencil"></i> {{ title }}</h2>
-                <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+                <a href="{% sb_url 'exams:exam_detail' exam.id %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
             </div>
             <div class="card shadow-lg border-0">
                 <div class="card-body p-4">
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var classId = this.value;
             sectionField.innerHTML = '<option value="">---------</option>';
             if (classId) {
-                fetch("{% url 'exams:get_sections_for_class' %}?class_id=" + classId)
+                fetch("{% sb_url 'exams:get_sections_for_class' %}?class_id=" + classId)
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
                         data.forEach(function(s) {

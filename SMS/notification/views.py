@@ -6,7 +6,7 @@ from django.utils import timezone
 from .models import Notification, Timetable, NOTIFICATION_TYPE_CHOICES, VISIBILITY_CHOICES
 from .forms import NotificationForm, TimetableForm
 from tenants.models import Branch
-from accounts.utils import get_user_branch, get_user_school, can_manage_academics
+from accounts.utils import get_user_branch, get_user_school, can_manage_academics, branch_url
 from rbac.services import require_principal_or_manager
 
 
@@ -19,7 +19,7 @@ def _dash():
 @login_required
 @require_principal_or_manager()
 def notification_list(request):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     branch = get_user_branch(request.user, request)
     if not school:
         return _dash()
@@ -57,7 +57,7 @@ def notification_list(request):
 @login_required
 @require_principal_or_manager()
 def create_notification(request):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _dash()
 
@@ -69,7 +69,7 @@ def create_notification(request):
             notif.created_by = request.user
             notif.save()
             messages.success(request, f'Notification "{notif.title}" created successfully!')
-            return redirect('notification:notification_list')
+            return redirect(branch_url(request, 'notification:notification_list'))
     else:
         form = NotificationForm(user=request.user, school=school)
 
@@ -81,7 +81,7 @@ def create_notification(request):
 @login_required
 @require_principal_or_manager()
 def edit_notification(request, notif_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _dash()
 
@@ -92,7 +92,7 @@ def edit_notification(request, notif_id):
         if form.is_valid():
             form.save()
             messages.success(request, f'Notification "{notif.title}" updated.')
-            return redirect('notification:notification_list')
+            return redirect(branch_url(request, 'notification:notification_list'))
     else:
         form = NotificationForm(instance=notif, user=request.user, school=school)
 
@@ -104,7 +104,7 @@ def edit_notification(request, notif_id):
 @login_required
 @require_principal_or_manager()
 def delete_notification(request, notif_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _dash()
 
@@ -114,7 +114,7 @@ def delete_notification(request, notif_id):
         notif.is_active = False
         notif.save()
         messages.success(request, f'Notification "{notif.title}" deleted.')
-        return redirect('notification:notification_list')
+        return redirect(branch_url(request, 'notification:notification_list'))
 
     return render(request, 'notification/delete_notification.html', {
         'notif': notif, 'title': f'Delete: {notif.title}',
@@ -124,7 +124,7 @@ def delete_notification(request, notif_id):
 @login_required
 @require_principal_or_manager()
 def notification_detail(request, notif_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _dash()
 
@@ -143,7 +143,7 @@ def notification_detail(request, notif_id):
 @login_required
 @require_principal_or_manager()
 def timetable_list(request):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     branch = get_user_branch(request.user, request)
     if not school:
         return _dash()
@@ -175,7 +175,7 @@ def timetable_list(request):
 @login_required
 @require_principal_or_manager()
 def create_timetable(request):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _dash()
 
@@ -187,7 +187,7 @@ def create_timetable(request):
             tt.created_by = request.user
             tt.save()
             messages.success(request, f'Timetable "{tt.title}" uploaded!')
-            return redirect('notification:timetable_list')
+            return redirect(branch_url(request, 'notification:timetable_list'))
     else:
         form = TimetableForm(user=request.user, school=school)
 
@@ -199,7 +199,7 @@ def create_timetable(request):
 @login_required
 @require_principal_or_manager()
 def edit_timetable(request, tt_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _dash()
 
@@ -210,7 +210,7 @@ def edit_timetable(request, tt_id):
         if form.is_valid():
             form.save()
             messages.success(request, f'Timetable "{tt.title}" updated.')
-            return redirect('notification:timetable_list')
+            return redirect(branch_url(request, 'notification:timetable_list'))
     else:
         form = TimetableForm(instance=tt, user=request.user, school=school)
 
@@ -222,7 +222,7 @@ def edit_timetable(request, tt_id):
 @login_required
 @require_principal_or_manager()
 def delete_timetable(request, tt_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _dash()
 
@@ -231,7 +231,7 @@ def delete_timetable(request, tt_id):
     if request.method == 'POST':
         tt.delete()
         messages.success(request, f'Timetable "{tt.title}" deleted.')
-        return redirect('notification:timetable_list')
+        return redirect(branch_url(request, 'notification:timetable_list'))
 
     return render(request, 'notification/delete_timetable.html', {
         'timetable': tt, 'title': f'Delete: {tt.title}',

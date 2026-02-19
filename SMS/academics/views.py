@@ -18,7 +18,7 @@ from .forms import (
 
 from rbac.services import require_permission, require_principal_or_manager, require_principal_or_manager_or_permission
 from rbac.permissions import Permissions
-from accounts.utils import get_user_branch, can_manage_academics
+from accounts.utils import get_user_branch, can_manage_academics, branch_url
 
 
 def _get_dashboard_redirect():
@@ -45,7 +45,7 @@ def create_class_wizard(request):
     if request.GET.get('back') == '1':
         request.session.pop('class_wizard_step', None)
         request.session.pop('class_wizard_data', None)
-        return redirect('academics:create_class_wizard')
+        return redirect(branch_url(request, 'academics:create_class_wizard'))
 
     step = request.session.get('class_wizard_step', 1)
 
@@ -75,7 +75,7 @@ def create_class_wizard(request):
             'branch': branch,
             'title': 'Create Sections - Step 2'
         })
-    return redirect('academics:create_class_wizard')
+    return redirect(branch_url(request, 'academics:create_class_wizard'))
 
 
 def handle_step1(request, branch):
@@ -91,7 +91,7 @@ def handle_step1(request, branch):
             'num_sections': form.cleaned_data['number_of_sections'],
         }
         messages.success(request, 'Class information saved. Now add section details.')
-        return redirect('academics:create_class_wizard')
+        return redirect(branch_url(request, 'academics:create_class_wizard'))
     else:
         messages.error(request, 'Please correct the errors below.')
         return render(request, 'academics/class_wizard_step1.html', {
@@ -145,7 +145,7 @@ def handle_step2(request, branch):
                 f'Class "{new_class.name}" created successfully with {len(sections_created)} sections: '
                 f'{", ".join(sections_created)}'
             )
-            return redirect('academics:class_list')
+            return redirect(branch_url(request, 'academics:class_list'))
 
         except Exception as e:
             messages.error(request, f'An error occurred: {str(e)}')
@@ -204,7 +204,7 @@ def edit_class(request, class_id):
         if form.is_valid():
             form.save()
             messages.success(request, f'Class "{class_obj.name}" updated successfully.')
-            return redirect('academics:class_list')
+            return redirect(branch_url(request, 'academics:class_list'))
     else:
         form = ClassEditForm(instance=class_obj, branch=branch)
 
@@ -231,7 +231,7 @@ def delete_class(request, class_id):
         class_obj.is_active = False
         class_obj.save()
         messages.success(request, f'Class "{class_obj.name}" has been deactivated.')
-        return redirect('academics:class_list')
+        return redirect(branch_url(request, 'academics:class_list'))
 
     return render(request, 'academics/delete_class.html', {
         'class_obj': class_obj,
@@ -314,7 +314,7 @@ def edit_section(request, section_id):
         if form.is_valid():
             form.save()
             messages.success(request, f'Section "{section.name}" updated successfully.')
-            return redirect('academics:section_list')
+            return redirect(branch_url(request, 'academics:section_list'))
     else:
         form = SectionEditForm(instance=section)
 
@@ -341,7 +341,7 @@ def delete_section(request, section_id):
         section.is_active = False
         section.save()
         messages.success(request, f'Section "{section.name}" has been deactivated.')
-        return redirect('academics:section_list')
+        return redirect(branch_url(request, 'academics:section_list'))
 
     return render(request, 'academics/delete_section.html', {
         'section': section,
@@ -385,7 +385,7 @@ def create_subject(request):
             subject.created_by = request.user
             subject.save()
             messages.success(request, f'Subject "{subject.name}" created successfully.')
-            return redirect('academics:subject_list')
+            return redirect(branch_url(request, 'academics:subject_list'))
     else:
         form = SubjectForm(branch=branch)
 
@@ -412,7 +412,7 @@ def edit_subject(request, subject_id):
         if form.is_valid():
             form.save()
             messages.success(request, f'Subject "{subject.name}" updated successfully.')
-            return redirect('academics:subject_list')
+            return redirect(branch_url(request, 'academics:subject_list'))
     else:
         form = SubjectForm(instance=subject, branch=branch)
 
@@ -439,7 +439,7 @@ def delete_subject(request, subject_id):
         subject.is_active = False
         subject.save()
         messages.success(request, f'Subject "{subject.name}" has been deactivated.')
-        return redirect('academics:subject_list')
+        return redirect(branch_url(request, 'academics:subject_list'))
 
     return render(request, 'academics/delete_subject.html', {
         'subject': subject,
@@ -480,7 +480,7 @@ def assign_subjects_to_section(request, section_id):
                 )
             else:
                 messages.info(request, 'No subjects were selected for assignment.')
-            return redirect('academics:section_list')
+            return redirect(branch_url(request, 'academics:section_list'))
     else:
         form = SectionSubjectAssignmentForm(
             section=section,
@@ -516,7 +516,7 @@ def remove_subject_from_section(request, assignment_id):
         subject_name = assignment.subject.name
         assignment.delete()
         messages.success(request, f'Subject "{subject_name}" removed from section {section_name}.')
-        return redirect('academics:section_list')
+        return redirect(branch_url(request, 'academics:section_list'))
 
     return render(request, 'academics/remove_subject.html', {
         'assignment': assignment,
@@ -614,7 +614,7 @@ def transfer_students(request, section_id):
             f'{source_section.class_obj.name}-{source_section.name} to '
             f'{target_section.class_obj.name}-{target_section.name}.'
         )
-        return redirect('academics:section_students', section_id=source_section.id)
+        return redirect(branch_url(request, 'academics:section_students', section_id=source_section.id))
 
     return render(request, 'academics/transfer_students.html', {
         'source_section': source_section,

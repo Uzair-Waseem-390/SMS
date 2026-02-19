@@ -15,7 +15,7 @@ from .forms import (
     ChangeCredentialsForm, ProfileEditForm,
     USER_TYPE_MAP,
 )
-from accounts.utils import get_user_branch, get_user_school
+from accounts.utils import get_user_branch, get_user_school, branch_url
 from rbac.services import require_principal_or_manager, require_principal_or_manager_or_permission
 from rbac.permissions import Permissions
 from django.contrib.auth import get_user_model
@@ -32,7 +32,7 @@ def _get_dashboard_redirect():
 @login_required
 @require_principal_or_manager()
 def create_staff_wizard(request):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     branch = get_user_branch(request.user, request)
 
     if not school or not branch:
@@ -42,7 +42,7 @@ def create_staff_wizard(request):
     if request.GET.get('back') == '1':
         request.session['staff_wizard_step'] = 1
         request.session.pop('staff_wizard_data', None)
-        return redirect('staff:create_staff_wizard')
+        return redirect(branch_url(request, 'staff:create_staff_wizard'))
 
     step = request.session.get('staff_wizard_step', 1)
 
@@ -55,7 +55,7 @@ def create_staff_wizard(request):
     if step == 2:
         staff_data = request.session.get('staff_wizard_data', {})
         staff_data['branch_code'] = branch.code if branch else 'SCH'
-        form = StaffCreationStep2Form(staff_data=staff_data, branch=branch)
+        form = StaffCreationStep2Form(staff_data=staff_data, branch=branch, request=request)
         return render(request, 'staff/create_step2.html', {
             'form': form, 'step': 2, 'staff_data': staff_data,
             'branch': branch, 'title': 'Create Staff - Step 2',
@@ -94,7 +94,7 @@ def _handle_step1(request, school, branch):
             'branch_id': branch.id,
         }
         messages.success(request, 'Staff information saved. Now create the account.')
-        return redirect('staff:create_staff_wizard')
+        return redirect(branch_url(request, 'staff:create_staff_wizard'))
 
     return render(request, 'staff/create_step1.html', {
         'form': form, 'step': 1, 'branch': branch, 'title': 'Create Staff - Step 1',
@@ -104,7 +104,7 @@ def _handle_step1(request, school, branch):
 @transaction.atomic
 def _handle_step2(request, school, branch):
     staff_data = request.session.get('staff_wizard_data', {})
-    form = StaffCreationStep2Form(request.POST, staff_data=staff_data, branch=branch)
+    form = StaffCreationStep2Form(request.POST, staff_data=staff_data, branch=branch, request=request)
 
     if form.is_valid():
         try:
@@ -200,11 +200,11 @@ def _handle_step2(request, school, branch):
 
             request.session.pop('staff_wizard_step', None)
             request.session.pop('staff_wizard_data', None)
-            return redirect('staff:staff_list')
+            return redirect(branch_url(request, 'staff:staff_list'))
 
         except Exception as e:
             messages.error(request, f'An error occurred: {str(e)}')
-            return redirect('staff:create_staff_wizard')
+            return redirect(branch_url(request, 'staff:create_staff_wizard'))
 
     return render(request, 'staff/create_step2.html', {
         'form': form, 'step': 2, 'staff_data': staff_data,
@@ -217,7 +217,7 @@ def _handle_step2(request, school, branch):
 @login_required
 @require_principal_or_manager()
 def staff_list(request):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     branch = get_user_branch(request.user, request)
     if not school:
         messages.error(request, "No school associated with your account.")
@@ -305,7 +305,7 @@ def staff_list(request):
 @login_required
 @require_principal_or_manager()
 def staff_detail(request, staff_type, staff_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _get_dashboard_redirect()
 
@@ -342,7 +342,7 @@ def staff_detail(request, staff_type, staff_id):
 @login_required
 @require_principal_or_manager()
 def edit_staff(request, staff_type, staff_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     branch = get_user_branch(request.user, request)
     if not school:
         return _get_dashboard_redirect()
@@ -369,7 +369,7 @@ def edit_staff(request, staff_type, staff_id):
     if request.method == 'POST' and form.is_valid():
         form.save()
         messages.success(request, f'{staff_type.title()} "{staff.full_name}" updated successfully.')
-        return redirect('staff:staff_detail', staff_type=staff_type, staff_id=staff.id)
+        return redirect(branch_url(request, 'staff:staff_detail', staff_type=staff_type, staff_id=staff.id))
 
     return render(request, 'staff/edit_staff.html', {
         'form': form, 'staff': staff, 'staff_type': staff_type,
@@ -382,7 +382,7 @@ def edit_staff(request, staff_type, staff_id):
 @login_required
 @require_principal_or_manager()
 def deactivate_staff(request, staff_type, staff_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _get_dashboard_redirect()
 
@@ -400,7 +400,7 @@ def deactivate_staff(request, staff_type, staff_id):
             staff.user.is_active = False
             staff.user.save()
         messages.success(request, f'{staff_type.title()} "{staff.full_name}" has been deactivated.')
-        return redirect('staff:staff_list')
+        return redirect(branch_url(request, 'staff:staff_list'))
 
     return render(request, 'staff/deactivate_staff.html', {
         'staff': staff, 'staff_type': staff_type,
@@ -411,7 +411,7 @@ def deactivate_staff(request, staff_type, staff_id):
 @login_required
 @require_principal_or_manager()
 def activate_staff(request, staff_type, staff_id):
-    school = get_user_school(request.user)
+    school = get_user_school(request.user, request)
     if not school:
         return _get_dashboard_redirect()
 
@@ -429,7 +429,7 @@ def activate_staff(request, staff_type, staff_id):
             staff.user.is_active = True
             staff.user.save()
         messages.success(request, f'{staff_type.title()} "{staff.full_name}" has been activated.')
-        return redirect('staff:staff_list')
+        return redirect(branch_url(request, 'staff:staff_list'))
 
     return render(request, 'staff/activate_staff.html', {
         'staff': staff, 'staff_type': staff_type,
@@ -443,7 +443,7 @@ def activate_staff(request, staff_type, staff_id):
 @require_principal_or_manager()
 def my_profile(request):
     user = request.user
-    school = get_user_school(user)
+    school = get_user_school(user, request)
     branch = get_user_branch(user, request)
 
     return render(request, 'staff/my_profile.html', {
@@ -463,7 +463,7 @@ def edit_my_profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully.')
-            return redirect('staff:my_profile')
+            return redirect(branch_url(request, 'staff:my_profile'))
     else:
         form = ProfileEditForm(instance=user)
 
@@ -506,7 +506,7 @@ def change_credentials(request, user_id):
 
             target_user.save()
             messages.success(request, f'Credentials for "{target_user.full_name}" updated successfully.')
-            return redirect('staff:staff_list')
+            return redirect(branch_url(request, 'staff:staff_list'))
     else:
         form = ChangeCredentialsForm(target_user=target_user)
 

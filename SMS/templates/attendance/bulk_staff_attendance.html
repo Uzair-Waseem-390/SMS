@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -8,10 +9,10 @@
             <p class="text-muted mb-0">Branch: {{ branch.name }} | School: {{ school.name }}</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="{% url 'attendance:staff_attendance_report' %}" class="btn btn-outline-info me-2">
+            <a href="{% sb_url 'attendance:staff_attendance_report' %}" class="btn btn-outline-info me-2">
                 <i class="bi bi-bar-chart"></i> View Report
             </a>
-            <a href="{% url 'staff:staff_list' %}" class="btn btn-outline-secondary">
+            <a href="{% sb_url 'staff:staff_list' %}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Staff
             </a>
         </div>
@@ -109,7 +110,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{% url 'attendance:individual_staff_attendance' row.user.id %}" class="btn btn-sm btn-outline-primary" title="Individual">
+                                <a href="{% sb_url 'attendance:individual_staff_attendance' row.user.id %}" class="btn btn-sm btn-outline-primary" title="Individual">
                                     <i class="bi bi-person"></i>
                                 </a>
                             </td>

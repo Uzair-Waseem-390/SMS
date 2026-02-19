@@ -16,7 +16,7 @@ from .forms import (
 from academics.models import Class, Section
 from rbac.services import require_principal_or_manager, require_principal_or_manager_or_permission
 from rbac.permissions import Permissions
-from accounts.utils import get_user_branch
+from accounts.utils import get_user_branch, branch_url
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -45,7 +45,7 @@ def create_student_wizard(request):
     if request.GET.get('back') == '1':
         request.session.pop('student_wizard_step', None)
         request.session.pop('student_wizard_data', None)
-        return redirect('students:create_student_wizard')
+        return redirect(branch_url(request, 'students:create_student_wizard'))
 
     step = request.session.get('student_wizard_step', 1)
     
@@ -66,7 +66,7 @@ def create_student_wizard(request):
         })
     elif step == 2:
         student_data = request.session.get('student_wizard_data', {})
-        form = StudentCreationStep2Form(student_data=student_data)
+        form = StudentCreationStep2Form(student_data=student_data, request=request)
         return render(request, 'students/create_step2.html', {
             'form': form,
             'step': 2,
@@ -85,6 +85,7 @@ def handle_step1(request, branch):
         section = form.cleaned_data['section_choice']
         
         # Store data in session
+        scholarship = form.cleaned_data.get('scholarship')
         request.session['student_wizard_step'] = 2
         request.session['student_wizard_data'] = {
             'first_name': form.cleaned_data['first_name'],
@@ -100,10 +101,11 @@ def handle_step1(request, branch):
             'class_name': form.cleaned_data['class_choice'].name,
             'section_id': section.id,
             'section_name': section.name,
+            'scholarship_id': scholarship.id if scholarship else None,
         }
         
         messages.success(request, 'Student information saved. Now create accounts.')
-        return redirect('students:create_student_wizard')
+        return redirect(branch_url(request, 'students:create_student_wizard'))
     else:
         messages.error(request, 'Please correct the errors below.')
         return render(request, 'students/create_step1.html', {
@@ -147,6 +149,7 @@ def handle_step2(request, branch):
                     pass
 
             # 2. Create Student Profile
+            scholarship_id = student_data.get('scholarship_id')
             student = Student.objects.create(
                 first_name=student_data['first_name'],
                 last_name=student_data['last_name'],
@@ -159,7 +162,8 @@ def handle_step2(request, branch):
                 address=student_data.get('address', ''),
                 section=section,
                 created_by=request.user,
-                user=student_user
+                user=student_user,
+                scholarship_id=scholarship_id,
             )
             
             # 3. Create Parent User
@@ -198,7 +202,7 @@ def handle_step2(request, branch):
                 f'Parent Login: {parent_user.email}',
                 extra_tags='safe'
             )
-            return redirect('students:student_detail', student_id=student.id)
+            return redirect(branch_url(request, 'students:student_detail', student_id=student.id))
             
         except Exception as e:
             messages.error(request, f'An error occurred: {str(e)}')
@@ -303,7 +307,7 @@ def edit_student(request, student_id):
         if form.is_valid():
             form.save()
             messages.success(request, f'Student "{student.full_name}" updated successfully.')
-            return redirect('students:student_detail', student_id=student.id)
+            return redirect(branch_url(request, 'students:student_detail', student_id=student.id))
     else:
         form = StudentEditForm(instance=student)
     
@@ -331,7 +335,7 @@ def delete_student(request, student_id):
             student.user.save()
         student.save()
         messages.success(request, f'Student "{student.full_name}" has been deactivated.')
-        return redirect('students:student_list')
+        return redirect(branch_url(request, 'students:student_list'))
     
     return render(request, 'students/delete_student.html', {
         'student': student,
@@ -403,7 +407,7 @@ def edit_parent(request, parent_id):
             
             form.save()
             messages.success(request, f'Parent "{parent.full_name}" updated successfully.')
-            return redirect('students:parent_detail', parent_id=parent.id)
+            return redirect(branch_url(request, 'students:parent_detail', parent_id=parent.id))
     else:
         form = ParentEditForm(instance=parent)
     

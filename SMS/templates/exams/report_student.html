@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load school_urls %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -56,7 +57,7 @@
                     {% for row in result_data %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td><a href="{% url 'exams:exam_detail' row.result.exam.id %}">{{ row.result.exam.name }}</a></td>
+                        <td><a href="{% sb_url 'exams:exam_detail' row.result.exam.id %}">{{ row.result.exam.name }}</a></td>
                         <td><span class="badge bg-secondary">{{ row.result.exam.get_exam_type_display }}</span></td>
                         <td>{{ row.result.exam.subject.name }}</td>
                         <td>{{ row.result.exam.date|date:"M d, Y" }}</td>

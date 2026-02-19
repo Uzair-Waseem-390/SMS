@@ -1,13 +1,33 @@
+from django.urls import path
+from . import views
 
+app_name = 'finance'
 
+urlpatterns = [
+    path('', views.finance_dashboard, name='dashboard'),
 
-now i want to create the finance app
-finance app should handle:
-Fee Structure
-Student Fee Generation
-Payments (unpaid/partial/full)
-Expenses
-Salary
-Financial Reports
+    # Fee Structure
+    path('fee-structure/', views.fee_structure_detail, name='fee_structure_detail'),
+    path('fee-structure/create/', views.edit_fee_structure, name='create_fee_structure'),
+    path('fee-structure/<int:fs_id>/edit/', views.edit_fee_structure, name='edit_fee_structure'),
 
-when fee structure is 
+    # Scholarships
+    path('scholarships/', views.scholarship_list, name='scholarship_list'),
+    path('scholarships/create/', views.create_scholarship, name='create_scholarship'),
+    path('scholarships/<int:pk>/edit/', views.edit_scholarship, name='edit_scholarship'),
+    path('scholarships/<int:pk>/delete/', views.delete_scholarship, name='delete_scholarship'),
+
+    # AJAX
+    path('api/sections-for-class/', views.api_sections_for_class, name='api_sections_for_class'),
+
+    # Fee Generation & List
+    path('fees/', views.fee_list, name='fee_list'),
+    path('fees/generate/', views.generate_fees, name='generate_fees'),
+    path('fees/<int:fee_id>/', views.fee_detail, name='fee_detail'),
+    path('fees/<int:fee_id>/pay/', views.record_payment, name='record_payment'),
+    path('fees/<int:fee_id>/receipt/', views.fee_receipt, name='fee_receipt'),
+
+    # Special fee edit/delete
+    path('fees/<int:fee_id>/edit-special/', views.edit_special_fee, name='edit_special_fee'),
+    path('fees/<int:fee_id>/delete-special/', views.delete_special_fee, name='delete_special_fee'),
+]

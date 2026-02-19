@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-currency-exchange"></i> Finance Dashboard</h2>
+            <p class="text-muted mb-0">Branch: {{ branch.name }}</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% sb_url 'finance:generate_fees' %}" class="btn btn-primary me-2"><i class="bi bi-plus-circle"></i> Generate Fees</a>
+            <a href="{% sb_url 'finance:fee_list' %}" class="btn btn-outline-primary me-2"><i class="bi bi-list-ul"></i> All Fees</a>
+            <a href="{% sb_url 'finance:scholarship_list' %}" class="btn btn-outline-info"><i class="bi bi-award"></i> Scholarships</a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-success shadow">
+                <div class="card-body text-center">
+                    <h3>PKR {{ total_collected|floatformat:0 }}</h3>
+                    <p class="mb-0">Total Collected</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-danger shadow">
+                <div class="card-body text-center">
+                    <h3>PKR {{ total_outstanding|floatformat:0 }}</h3>
+                    <p class="mb-0">Outstanding</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-primary shadow">
+                <div class="card-body text-center">
+                    <h3>{{ total_fees_count }}</h3>
+                    <p class="mb-0">Total Fee Records</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-info shadow">
+                <div class="card-body text-center">
+                    <h3>{{ scholarships_count }}</h3>
+                    <p class="mb-0">Active Scholarships</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-success">
+                <div class="card-body text-center">
+                    <h4 class="text-success">{{ paid_count }}</h4>
+                    <p class="text-muted mb-0">Paid</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <h4 class="text-warning">{{ partial_count }}</h4>
+                    <p class="text-muted mb-0">Partial</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body text-center">
+                    <h4 class="text-danger">{{ unpaid_count }}</h4>
+                    <p class="text-muted mb-0">Unpaid</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fee Structure -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-gear"></i> Active Fee Structure</h5>
+            <a href="{% sb_url 'finance:fee_structure_detail' %}" class="btn btn-sm btn-outline-primary">Manage</a>
+        </div>
+        <div class="card-body">
+            {% if fee_structure %}
+            <div class="row">
+                <div class="col-md-4"><strong>Frequency:</strong> {{ fee_structure.get_frequency_display }}</div>
+                {% if fee_structure.frequency == 'monthly' %}
+                <div class="col-md-4"><strong>Monthly:</strong> PKR {{ fee_structure.monthly_amount|floatformat:0 }}</div>
+                {% else %}
+                <div class="col-md-4"><strong>Yearly:</strong> PKR {{ fee_structure.yearly_amount|floatformat:0 }} ({{ fee_structure.yearly_installments }} installments)</div>
+                <div class="col-md-4"><strong>Per Installment:</strong> PKR {{ fee_structure.installment_amount|floatformat:0 }}</div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">No active fee structure. <a href="{% sb_url 'finance:create_fee_structure' %}">Create one</a></p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
