@@ -2,142 +2,290 @@
 {% load school_urls %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h2><i class="bi bi-currency-exchange"></i> Finance Dashboard</h2>
-            <p class="text-muted mb-0">Branch: {{ branch.name }}</p>
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-currency-exchange"></i> Finance Dashboard</h4>
+            <small class="text-muted">{{ branch.name }}</small>
         </div>
-        <div class="col-md-6 text-end">
-            <a href="{% sb_url 'finance:generate_fees' %}" class="btn btn-primary me-2"><i class="bi bi-plus-circle"></i> Generate Fees</a>
-            <a href="{% sb_url 'finance:fee_list' %}" class="btn btn-outline-primary me-2"><i class="bi bi-list-ul"></i> Fees</a>
-            <a href="{% sb_url 'finance:expense_list' %}" class="btn btn-outline-danger me-2"><i class="bi bi-receipt-cutoff"></i> Expenses</a>
-            <a href="{% sb_url 'finance:salary_list' %}" class="btn btn-outline-info me-2"><i class="bi bi-wallet2"></i> Salary</a>
-            <a href="{% sb_url 'finance:financial_report' %}" class="btn btn-outline-dark"><i class="bi bi-graph-up"></i> Reports</a>
-        </div>
-    </div>
-
-    {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-        {% endfor %}
-    {% endif %}
-
-    <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-success shadow">
-                <div class="card-body text-center">
-                    <h3>PKR {{ total_collected|floatformat:0 }}</h3>
-                    <p class="mb-0">Total Collected</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-danger shadow">
-                <div class="card-body text-center">
-                    <h3>PKR {{ total_outstanding|floatformat:0 }}</h3>
-                    <p class="mb-0">Outstanding</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-primary shadow">
-                <div class="card-body text-center">
-                    <h3>{{ total_fees_count }}</h3>
-                    <p class="mb-0">Total Fee Records</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-white bg-info shadow">
-                <div class="card-body text-center">
-                    <h3>{{ scholarships_count }}</h3>
-                    <p class="mb-0">Active Scholarships</p>
-                </div>
-            </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% sb_url 'finance:generate_fees' %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Generate Fees</a>
+            <a href="{% sb_url 'finance:create_expense' %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-plus"></i> Expense</a>
+            <a href="{% sb_url 'finance:generate_salary' %}" class="btn btn-sm btn-outline-info"><i class="bi bi-plus"></i> Salary</a>
+            <a href="{% sb_url 'finance:financial_report' %}" class="btn btn-sm btn-dark"><i class="bi bi-graph-up"></i> Full Report</a>
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-success">
-                <div class="card-body text-center">
-                    <h4 class="text-success">{{ paid_count }}</h4>
-                    <p class="text-muted mb-0">Paid</p>
+    {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endif %}
+
+    <!-- Row 1: Key Metrics (6 compact cards) -->
+    <div class="row g-2 mb-3">
+        <div class="col-6 col-md-2">
+            <div class="card bg-success text-white shadow-sm h-100">
+                <div class="card-body py-2 px-3 text-center">
+                    <small class="opacity-75">Income</small>
+                    <h5 class="mb-0">{{ total_income|floatformat:0 }}</h5>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-warning">
-                <div class="card-body text-center">
-                    <h4 class="text-warning">{{ partial_count }}</h4>
-                    <p class="text-muted mb-0">Partial</p>
+        <div class="col-6 col-md-2">
+            <div class="card bg-danger text-white shadow-sm h-100">
+                <div class="card-body py-2 px-3 text-center">
+                    <small class="opacity-75">Outstanding</small>
+                    <h5 class="mb-0">{{ total_outstanding|floatformat:0 }}</h5>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-danger">
-                <div class="card-body text-center">
-                    <h4 class="text-danger">{{ unpaid_count }}</h4>
-                    <p class="text-muted mb-0">Unpaid</p>
+        <div class="col-6 col-md-2">
+            <div class="card bg-warning text-dark shadow-sm h-100">
+                <div class="card-body py-2 px-3 text-center">
+                    <small class="opacity-75">Expenses</small>
+                    <h5 class="mb-0">{{ total_expenses|floatformat:0 }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card bg-info text-white shadow-sm h-100">
+                <div class="card-body py-2 px-3 text-center">
+                    <small class="opacity-75">Salaries Paid</small>
+                    <h5 class="mb-0">{{ total_salaries_paid|floatformat:0 }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card shadow-sm h-100 {% if net_profit >= 0 %}bg-primary text-white{% else %}bg-dark text-white{% endif %}">
+                <div class="card-body py-2 px-3 text-center">
+                    <small class="opacity-75">Net Profit</small>
+                    <h5 class="mb-0">{{ net_profit|floatformat:0 }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="card bg-secondary text-white shadow-sm h-100">
+                <div class="card-body py-2 px-3 text-center">
+                    <small class="opacity-75">Collection Rate</small>
+                    <h5 class="mb-0">{{ collection_rate|floatformat:1 }}%</h5>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Fee Structure -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="bi bi-gear"></i> Active Fee Structure</h5>
-            <a href="{% sb_url 'finance:fee_structure_detail' %}" class="btn btn-sm btn-outline-primary">Manage</a>
-        </div>
-        <div class="card-body">
-            {% if fee_structure %}
-            <div class="row">
-                <div class="col-md-4"><strong>Frequency:</strong> {{ fee_structure.get_frequency_display }}</div>
-                {% if fee_structure.frequency == 'monthly' %}
-                <div class="col-md-4"><strong>Monthly:</strong> PKR {{ fee_structure.monthly_amount|floatformat:0 }}</div>
-                {% else %}
-                <div class="col-md-4"><strong>Yearly:</strong> PKR {{ fee_structure.yearly_amount|floatformat:0 }} ({{ fee_structure.yearly_installments }} installments)</div>
-                <div class="col-md-4"><strong>Per Installment:</strong> PKR {{ fee_structure.installment_amount|floatformat:0 }}</div>
-                {% endif %}
+    <!-- Row 2: Fee Status + Profit Breakdown + Fee Structure -->
+    <div class="row g-2 mb-3">
+        <!-- Fee Status -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-cash-stack"></i> Fee Status</strong>
+                    <a href="{% sb_url 'finance:fee_list' %}" class="btn btn-outline-primary btn-sm py-0">View All</a>
+                </div>
+                <div class="card-body py-2">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td><span class="badge bg-success">Paid</span></td>
+                            <td class="text-end fw-bold">{{ paid_count }}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-warning text-dark">Partial</span></td>
+                            <td class="text-end fw-bold">{{ partial_count }}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-danger">Unpaid</span></td>
+                            <td class="text-end fw-bold">{{ unpaid_count }}</td>
+                        </tr>
+                        <tr class="border-top">
+                            <td><span class="badge bg-primary">Academic</span></td>
+                            <td class="text-end">{{ academic_fees_count }}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#6f42c1">Special</span></td>
+                            <td class="text-end">{{ special_fees_count }}</td>
+                        </tr>
+                        <tr class="border-top">
+                            <td>Total Receivable</td>
+                            <td class="text-end fw-bold">PKR {{ total_receivable|floatformat:0 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Scholarship Discounts</td>
+                            <td class="text-end text-info">-PKR {{ total_scholarship_deductions|floatformat:0 }}</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
-            {% else %}
-            <p class="text-muted mb-0">No active fee structure. <a href="{% sb_url 'finance:create_fee_structure' %}">Create one</a></p>
-            {% endif %}
+        </div>
+
+        <!-- Profit Breakdown -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light py-2">
+                    <strong><i class="bi bi-calculator"></i> Profit / Loss</strong>
+                </div>
+                <div class="card-body py-2">
+                    <table class="table table-sm mb-0">
+                        <tr class="table-success">
+                            <td><i class="bi bi-arrow-down-circle"></i> Fee Collected</td>
+                            <td class="text-end fw-bold">PKR {{ total_income|floatformat:0 }}</td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td><i class="bi bi-dash-circle"></i> Expenses</td>
+                            <td class="text-end">-PKR {{ total_expenses|floatformat:0 }}</td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td><i class="bi bi-dash-circle"></i> Salaries</td>
+                            <td class="text-end">-PKR {{ total_salaries_paid|floatformat:0 }}</td>
+                        </tr>
+                        <tr class="{% if net_profit >= 0 %}table-primary{% else %}table-dark{% endif %} fw-bold">
+                            <td><i class="bi bi-trophy"></i> Net Profit</td>
+                            <td class="text-end">PKR {{ net_profit|floatformat:0 }}</td>
+                        </tr>
+                    </table>
+                    <div class="text-center mt-2">
+                        <a href="{% sb_url 'finance:financial_report' %}" class="btn btn-outline-dark btn-sm py-0">Full Report</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fee Structure -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-gear"></i> Fee Structure</strong>
+                    <a href="{% sb_url 'finance:fee_structure_detail' %}" class="btn btn-outline-primary btn-sm py-0">Manage</a>
+                </div>
+                <div class="card-body py-2">
+                    {% if fee_structure %}
+                    <table class="table table-sm table-borderless mb-2">
+                        <tr><td class="text-muted">Frequency</td><td class="text-end fw-bold">{{ fee_structure.get_frequency_display }}</td></tr>
+                        {% if fee_structure.frequency == 'monthly' %}
+                        <tr><td class="text-muted">Monthly Fee</td><td class="text-end fw-bold">PKR {{ fee_structure.monthly_amount|floatformat:0 }}</td></tr>
+                        {% else %}
+                        <tr><td class="text-muted">Yearly Total</td><td class="text-end fw-bold">PKR {{ fee_structure.yearly_amount|floatformat:0 }}</td></tr>
+                        <tr><td class="text-muted">Installments</td><td class="text-end">{{ fee_structure.yearly_installments }}</td></tr>
+                        <tr><td class="text-muted">Per Installment</td><td class="text-end fw-bold">PKR {{ fee_structure.installment_amount|floatformat:0 }}</td></tr>
+                        {% endif %}
+                    </table>
+                    {% else %}
+                    <p class="text-muted mb-1"><i class="bi bi-exclamation-triangle text-warning"></i> No active fee structure.</p>
+                    <a href="{% sb_url 'finance:create_fee_structure' %}" class="btn btn-primary btn-sm">Create One</a>
+                    {% endif %}
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-award text-info"></i> Scholarships</span>
+                        <span class="fw-bold">{{ scholarships_count }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Quick Access -->
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-danger h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-receipt-cutoff fs-1 text-danger"></i>
-                    <h5 class="mt-2">Expenses</h5>
-                    <p class="text-muted">PKR {{ total_expenses|floatformat:0 }}</p>
-                    <a href="{% sb_url 'finance:expense_list' %}" class="btn btn-outline-danger btn-sm">View Expenses</a>
+    <!-- Row 3: Salary This Month + Expense Breakdown + Recent Expenses -->
+    <div class="row g-2 mb-3">
+        <!-- Current Month Salary -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-wallet2"></i> Salary - {{ cur_month_name }}</strong>
+                    <a href="{% sb_url 'finance:pay_salary' %}" class="btn btn-outline-success btn-sm py-0">Pay</a>
+                </div>
+                <div class="card-body py-2">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td class="text-muted">Employees Registered</td>
+                            <td class="text-end fw-bold">{{ salary_employee_count }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Total This Month</td>
+                            <td class="text-end fw-bold">PKR {{ cur_salary_total|floatformat:0 }}</td>
+                        </tr>
+                        <tr class="text-success">
+                            <td><i class="bi bi-check-circle"></i> Paid</td>
+                            <td class="text-end fw-bold">PKR {{ cur_salary_paid|floatformat:0 }}</td>
+                        </tr>
+                        <tr class="text-danger">
+                            <td><i class="bi bi-clock"></i> Pending</td>
+                            <td class="text-end fw-bold">PKR {{ cur_salary_unpaid|floatformat:0 }}</td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="text-muted">All Time Paid</td>
+                            <td class="text-end">PKR {{ total_salaries_paid|floatformat:0 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">All Time Pending</td>
+                            <td class="text-end">PKR {{ total_salaries_pending|floatformat:0 }}</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-info h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-wallet2 fs-1 text-info"></i>
-                    <h5 class="mt-2">Salaries</h5>
-                    <p class="text-muted">PKR {{ total_salaries|floatformat:0 }}</p>
-                    <a href="{% sb_url 'finance:salary_list' %}" class="btn btn-outline-info btn-sm">View Salaries</a>
+
+        <!-- Expense Breakdown -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bi bi-pie-chart"></i> Top Expenses</strong>
+                    <a href="{% sb_url 'finance:expense_list' %}" class="btn btn-outline-danger btn-sm py-0">View All</a>
+                </div>
+                <div class="card-body py-2">
+                    {% if top_expense_cats %}
+                    <table class="table table-sm table-borderless mb-0">
+                        {% for item in top_expense_cats %}
+                        <tr>
+                            <td>{{ item.cat }}</td>
+                            <td class="text-end fw-bold">PKR {{ item.amt|floatformat:0 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="border-top fw-bold">
+                            <td>Total</td>
+                            <td class="text-end text-danger">PKR {{ total_expenses|floatformat:0 }}</td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <p class="text-muted text-center mb-0 py-3">No expenses recorded yet.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-dark h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-graph-up fs-1 text-dark"></i>
-                    <h5 class="mt-2">Financial Reports</h5>
-                    <p class="text-muted">Income, Expenses & Profit</p>
-                    <a href="{% sb_url 'finance:financial_report' %}" class="btn btn-outline-dark btn-sm">View Reports</a>
+
+        <!-- Recent Expenses -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light py-2">
+                    <strong><i class="bi bi-clock-history"></i> Recent Expenses</strong>
+                </div>
+                <div class="card-body py-2">
+                    {% if recent_expenses %}
+                    {% for exp in recent_expenses %}
+                    <div class="d-flex justify-content-between align-items-center {% if not forloop.last %}border-bottom{% endif %} py-1">
+                        <div>
+                            <strong class="d-block" style="font-size:.85rem">{{ exp.title }}</strong>
+                            <small class="text-muted">{{ exp.expense_date|date:"M d" }} &middot; {{ exp.get_category_display }}</small>
+                        </div>
+                        <span class="fw-bold text-danger">{{ exp.amount|floatformat:0 }}</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center mb-0 py-3">No expenses yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 4: Quick Navigation -->
+    <div class="row g-2">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body py-2 d-flex gap-2 flex-wrap justify-content-center">
+                    <a href="{% sb_url 'finance:fee_list' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-cash-stack"></i> All Fees</a>
+                    <a href="{% sb_url 'finance:generate_fees' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus-circle"></i> Generate Fees</a>
+                    <a href="{% sb_url 'finance:expense_list' %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-receipt-cutoff"></i> Expenses</a>
+                    <a href="{% sb_url 'finance:salary_list' %}" class="btn btn-outline-info btn-sm"><i class="bi bi-wallet2"></i> Salary Records</a>
+                    <a href="{% sb_url 'finance:pay_salary' %}" class="btn btn-outline-success btn-sm"><i class="bi bi-cash-coin"></i> Pay Salary</a>
+                    <a href="{% sb_url 'finance:scholarship_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-award"></i> Scholarships</a>
+                    <a href="{% sb_url 'finance:fee_structure_detail' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-gear"></i> Fee Structure</a>
+                    <a href="{% sb_url 'finance:financial_report' %}" class="btn btn-dark btn-sm"><i class="bi bi-graph-up"></i> Full Financial Report</a>
                 </div>
             </div>
         </div>

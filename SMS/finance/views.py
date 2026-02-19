@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Count, F
 from django.http import JsonResponse
 from django.utils import timezone
 from decimal import Decimal
@@ -58,6 +58,8 @@ def finance_dashboard(request):
 
     fee_structure = BranchFeeStructure.objects.filter(branch=branch, is_active=True).first()
     total_fees = StudentFee.objects.filter(branch=branch, is_active=True)
+    academic_fees = total_fees.filter(fee_type='academic')
+    special_fees = total_fees.filter(fee_type='special')
     unpaid = total_fees.filter(status='unpaid')
     partial = total_fees.filter(status='partial')
     paid = total_fees.filter(status='paid')
@@ -68,25 +70,65 @@ def finance_dashboard(request):
     partial_outstanding = partial.aggregate(s=Sum('net_amount'))['s'] or Decimal('0')
     partial_outstanding -= partial_collected
 
-    scholarships = Scholarship.objects.filter(branch=branch, is_active=True)
-    special_fees_count = total_fees.filter(fee_type='special').count()
+    total_income = total_collected + partial_collected
 
-    total_expenses = Expense.objects.filter(branch=branch).aggregate(s=Sum('amount'))['s'] or Decimal('0')
-    total_salaries = SalaryRecord.objects.filter(branch=branch, status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    scholarships = Scholarship.objects.filter(branch=branch, is_active=True)
+    total_scholarship_deductions = total_fees.aggregate(s=Sum('scholarship_deduction'))['s'] or Decimal('0')
+
+    expenses_qs = Expense.objects.filter(branch=branch)
+    total_expenses = expenses_qs.aggregate(s=Sum('amount'))['s'] or Decimal('0')
+    recent_expenses = expenses_qs.order_by('-expense_date')[:5]
+
+    from .models import EXPENSE_CATEGORY_CHOICES
+    top_expense_cats = []
+    for code, label in EXPENSE_CATEGORY_CHOICES:
+        amt = expenses_qs.filter(category=code).aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        if amt:
+            top_expense_cats.append({'cat': label, 'amt': amt})
+    top_expense_cats.sort(key=lambda x: x['amt'], reverse=True)
+
+    salaries_qs = SalaryRecord.objects.filter(branch=branch)
+    total_salaries_paid = salaries_qs.filter(status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    total_salaries_pending = salaries_qs.filter(status='unpaid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    salary_employee_count = salaries_qs.values('employee').distinct().count()
+
+    now = timezone.now()
+    cur_month_salaries = salaries_qs.filter(month=now.month, year=now.year)
+    cur_salary_total = cur_month_salaries.aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    cur_salary_paid = cur_month_salaries.filter(status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    cur_salary_unpaid = cur_salary_total - cur_salary_paid
+
+    net_profit = total_income - total_expenses - total_salaries_paid
+
+    total_receivable = total_fees.aggregate(s=Sum('net_amount'))['s'] or Decimal('0')
+    collection_rate = (total_income / total_receivable * 100) if total_receivable else Decimal('0')
 
     return render(request, 'finance/dashboard.html', {
         'fee_structure': fee_structure,
+        'branch': branch,
         'total_fees_count': total_fees.count(),
+        'academic_fees_count': academic_fees.count(),
+        'special_fees_count': special_fees.count(),
         'unpaid_count': unpaid.count(),
         'partial_count': partial.count(),
         'paid_count': paid.count(),
-        'total_collected': total_collected + partial_collected,
+        'total_income': total_income,
         'total_outstanding': total_outstanding + partial_outstanding,
+        'total_receivable': total_receivable,
+        'collection_rate': collection_rate,
         'scholarships_count': scholarships.count(),
-        'special_fees_count': special_fees_count,
+        'total_scholarship_deductions': total_scholarship_deductions,
         'total_expenses': total_expenses,
-        'total_salaries': total_salaries,
-        'branch': branch,
+        'recent_expenses': recent_expenses,
+        'top_expense_cats': top_expense_cats[:5],
+        'total_salaries_paid': total_salaries_paid,
+        'total_salaries_pending': total_salaries_pending,
+        'salary_employee_count': salary_employee_count,
+        'cur_month_name': calendar.month_name[now.month],
+        'cur_salary_total': cur_salary_total,
+        'cur_salary_paid': cur_salary_paid,
+        'cur_salary_unpaid': cur_salary_unpaid,
+        'net_profit': net_profit,
         'title': 'Finance Dashboard',
     })
 
@@ -909,14 +951,83 @@ def financial_report(request):
 
     total_expenses = expenses_qs.aggregate(s=Sum('amount'))['s'] or Decimal('0')
     total_salaries = salaries_qs.filter(status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    total_salaries_pending = salaries_qs.filter(status='unpaid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
     net_profit = total_collected - total_expenses - total_salaries
+    total_outflow = total_expenses + total_salaries
 
-    expense_by_cat = []
+    total_receivable = fees_qs.aggregate(s=Sum('net_amount'))['s'] or Decimal('0')
+    collection_rate = (total_collected / total_receivable * 100) if total_receivable else Decimal('0')
+
+    total_scholarship_given = fees_qs.aggregate(s=Sum('scholarship_deduction'))['s'] or Decimal('0')
+
+    # Fee type breakdown
+    academic_count = fees_qs.filter(fee_type='academic').count()
+    special_count = fees_qs.filter(fee_type='special').count()
+    academic_collected = fees_qs.filter(fee_type='academic', status__in=['paid', 'partial']).aggregate(s=Sum('amount_paid'))['s'] or Decimal('0')
+    special_collected = fees_qs.filter(fee_type='special', status__in=['paid', 'partial']).aggregate(s=Sum('amount_paid'))['s'] or Decimal('0')
+    academic_pending = fees_qs.filter(fee_type='academic').exclude(status='paid').aggregate(s=Sum('net_amount'))['s'] or Decimal('0')
+    academic_pending -= fees_qs.filter(fee_type='academic').exclude(status='paid').aggregate(s=Sum('amount_paid'))['s'] or Decimal('0')
+    special_pending = fees_qs.filter(fee_type='special').exclude(status='paid').aggregate(s=Sum('net_amount'))['s'] or Decimal('0')
+    special_pending -= fees_qs.filter(fee_type='special').exclude(status='paid').aggregate(s=Sum('amount_paid'))['s'] or Decimal('0')
+
+    # Fee status counts
+    paid_count = fees_qs.filter(status='paid').count()
+    partial_count = fees_qs.filter(status='partial').count()
+    unpaid_count = fees_qs.filter(status='unpaid').count()
+
+    # Expense category breakdown
     from .models import EXPENSE_CATEGORY_CHOICES
+    expense_by_cat = []
     for code, label in EXPENSE_CATEGORY_CHOICES:
         amt = expenses_qs.filter(category=code).aggregate(s=Sum('amount'))['s'] or Decimal('0')
         if amt:
-            expense_by_cat.append({'category': label, 'amount': amt})
+            pct = (amt / total_expenses * 100) if total_expenses else Decimal('0')
+            expense_by_cat.append({'category': label, 'amount': amt, 'pct': pct})
+    expense_by_cat.sort(key=lambda x: x['amount'], reverse=True)
+
+    # Salary by employee type
+    salary_by_type = salaries_qs.values('employee_type').annotate(
+        total=Sum('salary_amount'),
+        paid=Sum('salary_amount', filter=Q(status='paid')),
+        unpaid=Sum('salary_amount', filter=Q(status='unpaid')),
+        count=Count('id'),
+    ).order_by('-total')
+    for item in salary_by_type:
+        item['paid'] = item['paid'] or Decimal('0')
+        item['unpaid'] = item['unpaid'] or Decimal('0')
+
+    # Monthly trends (last 6 months)
+    monthly_data = []
+    now = timezone.now()
+    for offset in range(5, -1, -1):
+        m = now.month - offset
+        y = now.year
+        while m <= 0:
+            m += 12
+            y -= 1
+        month_label = f"{calendar.month_abbr[m]} {y}"
+        m_fees = StudentFee.objects.filter(branch=branch, is_active=True, due_date__month=m, due_date__year=y)
+        m_income = m_fees.filter(status__in=['paid', 'partial']).aggregate(s=Sum('amount_paid'))['s'] or Decimal('0')
+        m_expense = Expense.objects.filter(branch=branch, expense_date__month=m, expense_date__year=y).aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        m_salary = SalaryRecord.objects.filter(branch=branch, month=m, year=y, status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+        monthly_data.append({
+            'label': month_label,
+            'income': m_income,
+            'expense': m_expense,
+            'salary': m_salary,
+            'profit': m_income - m_expense - m_salary,
+        })
+
+    # Top defaulters (students with highest unpaid balances)
+    top_defaulters = (
+        fees_qs.exclude(status='paid')
+        .values('student__first_name', 'student__last_name', 'student__id')
+        .annotate(
+            balance=Sum(F('net_amount') - F('amount_paid')),
+            fee_count=Count('id'),
+        )
+        .order_by('-balance')[:10]
+    )
 
     return render(request, 'finance/financial_report.html', {
         'branch': branch,
@@ -924,8 +1035,26 @@ def financial_report(request):
         'total_pending': total_pending,
         'total_expenses': total_expenses,
         'total_salaries': total_salaries,
+        'total_salaries_pending': total_salaries_pending,
+        'total_outflow': total_outflow,
         'net_profit': net_profit,
+        'total_receivable': total_receivable,
+        'collection_rate': collection_rate,
+        'total_scholarship_given': total_scholarship_given,
+        'academic_count': academic_count,
+        'special_count': special_count,
+        'academic_collected': academic_collected,
+        'special_collected': special_collected,
+        'academic_pending': academic_pending,
+        'special_pending': special_pending,
+        'paid_count': paid_count,
+        'partial_count': partial_count,
+        'unpaid_count': unpaid_count,
+        'total_fees_count': fees_qs.count(),
         'expense_by_cat': expense_by_cat,
+        'salary_by_type': salary_by_type,
+        'monthly_data': monthly_data,
+        'top_defaulters': top_defaulters,
         'date_from': date_from, 'date_to': date_to,
         'title': 'Financial Report',
     })
