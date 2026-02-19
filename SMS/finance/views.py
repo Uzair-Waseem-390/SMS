@@ -7,13 +7,20 @@ from django.http import JsonResponse
 from django.utils import timezone
 from decimal import Decimal
 
-from .models import BranchFeeStructure, Scholarship, StudentFee
-from .forms import BranchFeeStructureForm, ScholarshipForm, GenerateFeeForm, RecordPaymentForm, EditSpecialFeeForm
+from .models import BranchFeeStructure, Scholarship, StudentFee, Expense, SalaryRecord
+from .forms import (
+    BranchFeeStructureForm, ScholarshipForm, GenerateFeeForm, RecordPaymentForm,
+    EditSpecialFeeForm, ExpenseForm, GenerateSalaryForm, EditSalaryForm,
+)
 from students.models import Student
 from academics.models import Class, Section
 from tenants.models import Branch
 from accounts.utils import get_user_branch, get_user_school, get_school_and_branch, branch_url
 from rbac.services import require_principal_or_manager
+from django.contrib.auth import get_user_model
+import calendar
+
+User = get_user_model()
 
 
 def _dash():
@@ -64,6 +71,9 @@ def finance_dashboard(request):
     scholarships = Scholarship.objects.filter(branch=branch, is_active=True)
     special_fees_count = total_fees.filter(fee_type='special').count()
 
+    total_expenses = Expense.objects.filter(branch=branch).aggregate(s=Sum('amount'))['s'] or Decimal('0')
+    total_salaries = SalaryRecord.objects.filter(branch=branch, status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+
     return render(request, 'finance/dashboard.html', {
         'fee_structure': fee_structure,
         'total_fees_count': total_fees.count(),
@@ -74,6 +84,8 @@ def finance_dashboard(request):
         'total_outstanding': total_outstanding + partial_outstanding,
         'scholarships_count': scholarships.count(),
         'special_fees_count': special_fees_count,
+        'total_expenses': total_expenses,
+        'total_salaries': total_salaries,
         'branch': branch,
         'title': 'Finance Dashboard',
     })
@@ -524,4 +536,396 @@ def fee_receipt(request, fee_id):
     return render(request, 'finance/fee_receipt.html', {
         'fee': fee, 'school': school, 'branch': branch,
         'title': f'Fee Receipt - {fee.student.full_name}',
+    })
+
+
+# ═══ Expenses ═════════════════════════════════════════════════════
+
+@login_required
+@require_finance_access()
+def expense_list(request):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    expenses = Expense.objects.filter(branch=branch).order_by('-expense_date', '-created_at')
+
+    cat = request.GET.get('category', '')
+    if cat:
+        expenses = expenses.filter(category=cat)
+
+    search = request.GET.get('search', '')
+    if search:
+        expenses = expenses.filter(Q(title__icontains=search) | Q(description__icontains=search))
+
+    total = expenses.aggregate(s=Sum('amount'))['s'] or Decimal('0')
+
+    from .models import EXPENSE_CATEGORY_CHOICES
+    return render(request, 'finance/expense_list.html', {
+        'expenses': expenses, 'total': total, 'branch': branch,
+        'categories': EXPENSE_CATEGORY_CHOICES,
+        'selected_category': cat, 'search_query': search,
+        'title': 'Expenses',
+    })
+
+
+@login_required
+@require_finance_access()
+def create_expense(request):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST)
+        if form.is_valid():
+            exp = form.save(commit=False)
+            exp.branch = branch
+            exp.school = school
+            exp.created_by = request.user
+            exp.save()
+            messages.success(request, f'Expense "{exp.title}" of PKR {exp.amount} added.')
+            return redirect(branch_url(request, 'finance:expense_list'))
+    else:
+        form = ExpenseForm()
+
+    return render(request, 'finance/expense_form.html', {
+        'form': form, 'branch': branch, 'title': 'Add Expense', 'is_edit': False,
+    })
+
+
+@login_required
+@require_finance_access()
+def edit_expense(request, pk):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    expense = get_object_or_404(Expense, pk=pk, branch=branch)
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST, instance=expense)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Expense "{expense.title}" updated.')
+            return redirect(branch_url(request, 'finance:expense_list'))
+    else:
+        form = ExpenseForm(instance=expense)
+
+    return render(request, 'finance/expense_form.html', {
+        'form': form, 'expense': expense, 'branch': branch,
+        'title': f'Edit: {expense.title}', 'is_edit': True,
+    })
+
+
+@login_required
+@require_finance_access()
+def delete_expense(request, pk):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    expense = get_object_or_404(Expense, pk=pk, branch=branch)
+    if request.method == 'POST':
+        title = expense.title
+        expense.delete()
+        messages.success(request, f'Expense "{title}" deleted.')
+        return redirect(branch_url(request, 'finance:expense_list'))
+
+    return render(request, 'finance/delete_expense.html', {
+        'expense': expense, 'title': f'Delete: {expense.title}',
+    })
+
+
+# ═══ Salary ═══════════════════════════════════════════════════════
+
+def _get_branch_employees(branch):
+    """Return all employees of a branch with their salary amount and type."""
+    from staff.models import Teacher, Accountant, Employee
+    employees = []
+
+    if branch.manager:
+        employees.append({
+            'user': branch.manager,
+            'type': 'Manager',
+            'salary': branch.manager_salary or Decimal('0'),
+        })
+
+    for t in Teacher.objects.filter(branch=branch, is_active=True).select_related('user'):
+        employees.append({
+            'user': t.user,
+            'type': 'Teacher',
+            'salary': t.salary or Decimal('0'),
+        })
+
+    for a in Accountant.objects.filter(branch=branch, is_active=True).select_related('user'):
+        employees.append({
+            'user': a.user,
+            'type': 'Accountant',
+            'salary': a.salary or Decimal('0'),
+        })
+
+    for e in Employee.objects.filter(branch=branch, is_active=True).select_related('user'):
+        employees.append({
+            'user': e.user,
+            'type': e.get_employee_type_display(),
+            'salary': e.salary or Decimal('0'),
+        })
+
+    return employees
+
+
+@login_required
+@require_finance_access()
+def salary_list(request):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    records = SalaryRecord.objects.filter(branch=branch).select_related('employee', 'paid_by')
+
+    month_f = request.GET.get('month', '')
+    year_f = request.GET.get('year', '')
+    status_f = request.GET.get('status', '')
+
+    if month_f:
+        records = records.filter(month=int(month_f))
+    if year_f:
+        records = records.filter(year=int(year_f))
+    if status_f:
+        records = records.filter(status=status_f)
+
+    total_salary = records.aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    total_paid = records.filter(status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+
+    return render(request, 'finance/salary_list.html', {
+        'records': records, 'branch': branch,
+        'total_salary': total_salary, 'total_paid': total_paid,
+        'selected_month': month_f, 'selected_year': year_f, 'selected_status': status_f,
+        'months': [(i, calendar.month_name[i]) for i in range(1, 13)],
+        'title': 'Salary Records',
+    })
+
+
+@login_required
+@require_finance_access()
+def generate_salary(request):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    if request.method == 'POST':
+        form = GenerateSalaryForm(request.POST)
+        if form.is_valid():
+            month = int(form.cleaned_data['month'])
+            year = int(form.cleaned_data['year'])
+
+            employees = _get_branch_employees(branch)
+            created = 0
+            skipped = 0
+            with transaction.atomic():
+                for emp in employees:
+                    if not emp['user']:
+                        continue
+                    exists = SalaryRecord.objects.filter(
+                        employee=emp['user'], month=month, year=year
+                    ).exists()
+                    if exists:
+                        skipped += 1
+                        continue
+                    SalaryRecord.objects.create(
+                        branch=branch, school=school,
+                        employee=emp['user'],
+                        employee_type=emp['type'],
+                        salary_amount=emp['salary'],
+                        month=month, year=year,
+                        created_by=request.user,
+                    )
+                    created += 1
+
+            msg = f'Salary records generated for {created} employee(s) for {calendar.month_name[month]} {year}.'
+            if skipped:
+                msg += f' {skipped} already existed and were skipped.'
+            messages.success(request, msg)
+            return redirect(branch_url(request, 'finance:salary_list') + f'?month={month}&year={year}')
+    else:
+        form = GenerateSalaryForm()
+
+    employees = _get_branch_employees(branch)
+    return render(request, 'finance/generate_salary.html', {
+        'form': form, 'branch': branch, 'employees': employees,
+        'title': 'Generate Salary Records',
+    })
+
+
+@login_required
+@require_finance_access()
+def edit_salary(request, pk):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    record = get_object_or_404(SalaryRecord, pk=pk, branch=branch)
+
+    if request.method == 'POST':
+        form = EditSalaryForm(request.POST)
+        if form.is_valid():
+            record.salary_amount = form.cleaned_data['salary_amount']
+            record.description = form.cleaned_data.get('description', '')
+            record.save()
+            messages.success(request, f'Salary record for {record.employee.full_name} updated.')
+            return redirect(branch_url(request, 'finance:salary_list') + f'?month={record.month}&year={record.year}')
+    else:
+        form = EditSalaryForm(initial={
+            'salary_amount': record.salary_amount,
+            'description': record.description,
+        })
+
+    return render(request, 'finance/edit_salary.html', {
+        'form': form, 'record': record, 'branch': branch,
+        'title': f'Edit Salary - {record.employee.full_name}',
+    })
+
+
+@login_required
+@require_finance_access()
+def delete_salary(request, pk):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    record = get_object_or_404(SalaryRecord, pk=pk, branch=branch)
+    if request.method == 'POST':
+        name = record.employee.full_name
+        record.delete()
+        messages.success(request, f'Salary record for {name} deleted.')
+        return redirect(branch_url(request, 'finance:salary_list'))
+
+    return render(request, 'finance/delete_salary.html', {
+        'record': record, 'title': f'Delete Salary - {record.employee.full_name}',
+    })
+
+
+@login_required
+@require_finance_access()
+def pay_salary(request):
+    """Page to pay salaries for a specific month/year. Lists all unpaid records."""
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    month = request.GET.get('month', str(timezone.now().month))
+    year = request.GET.get('year', str(timezone.now().year))
+
+    try:
+        month = int(month)
+        year = int(year)
+    except (ValueError, TypeError):
+        month = timezone.now().month
+        year = timezone.now().year
+
+    records = SalaryRecord.objects.filter(
+        branch=branch, month=month, year=year
+    ).select_related('employee').order_by('employee__full_name')
+
+    if request.method == 'POST':
+        salary_ids = request.POST.getlist('salary_ids')
+        paid_count = 0
+        with transaction.atomic():
+            for sid in salary_ids:
+                try:
+                    rec = SalaryRecord.objects.get(pk=int(sid), branch=branch, status='unpaid')
+                    rec.status = 'paid'
+                    rec.payment_date = timezone.now().date()
+                    rec.paid_by = request.user
+                    rec.paid_by_role = request.user.get_user_type_display()
+                    rec.save()
+                    paid_count += 1
+                except SalaryRecord.DoesNotExist:
+                    continue
+
+        messages.success(request, f'{paid_count} salary(ies) marked as paid for {calendar.month_name[month]} {year}.')
+        return redirect(branch_url(request, 'finance:pay_salary') + f'?month={month}&year={year}')
+
+    total = records.aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    paid_total = records.filter(status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    unpaid_total = records.filter(status='unpaid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+
+    return render(request, 'finance/pay_salary.html', {
+        'records': records, 'branch': branch,
+        'month': month, 'year': year,
+        'month_name': calendar.month_name[month],
+        'total': total, 'paid_total': paid_total, 'unpaid_total': unpaid_total,
+        'months': [(i, calendar.month_name[i]) for i in range(1, 13)],
+        'title': f'Pay Salary - {calendar.month_name[month]} {year}',
+    })
+
+
+# ═══ Financial Reports ════════════════════════════════════════════
+
+@login_required
+@require_finance_access()
+def financial_report(request):
+    school = get_user_school(request.user, request)
+    branch = get_user_branch(request.user, request)
+    if not school or not branch:
+        return _dash()
+
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+
+    fees_qs = StudentFee.objects.filter(branch=branch, is_active=True)
+    expenses_qs = Expense.objects.filter(branch=branch)
+    salaries_qs = SalaryRecord.objects.filter(branch=branch)
+
+    if date_from:
+        fees_qs = fees_qs.filter(due_date__gte=date_from)
+        expenses_qs = expenses_qs.filter(expense_date__gte=date_from)
+        salaries_qs = salaries_qs.filter(payment_date__gte=date_from)
+    if date_to:
+        fees_qs = fees_qs.filter(due_date__lte=date_to)
+        expenses_qs = expenses_qs.filter(expense_date__lte=date_to)
+        salaries_qs = salaries_qs.filter(payment_date__lte=date_to)
+
+    total_collected = fees_qs.filter(
+        status__in=['paid', 'partial']
+    ).aggregate(s=Sum('amount_paid'))['s'] or Decimal('0')
+
+    total_pending = fees_qs.exclude(
+        status='paid'
+    ).aggregate(s=Sum('net_amount'))['s'] or Decimal('0')
+    total_paid_towards_pending = fees_qs.exclude(
+        status='paid'
+    ).aggregate(s=Sum('amount_paid'))['s'] or Decimal('0')
+    total_pending -= total_paid_towards_pending
+
+    total_expenses = expenses_qs.aggregate(s=Sum('amount'))['s'] or Decimal('0')
+    total_salaries = salaries_qs.filter(status='paid').aggregate(s=Sum('salary_amount'))['s'] or Decimal('0')
+    net_profit = total_collected - total_expenses - total_salaries
+
+    expense_by_cat = []
+    from .models import EXPENSE_CATEGORY_CHOICES
+    for code, label in EXPENSE_CATEGORY_CHOICES:
+        amt = expenses_qs.filter(category=code).aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        if amt:
+            expense_by_cat.append({'category': label, 'amount': amt})
+
+    return render(request, 'finance/financial_report.html', {
+        'branch': branch,
+        'total_collected': total_collected,
+        'total_pending': total_pending,
+        'total_expenses': total_expenses,
+        'total_salaries': total_salaries,
+        'net_profit': net_profit,
+        'expense_by_cat': expense_by_cat,
+        'date_from': date_from, 'date_to': date_to,
+        'title': 'Financial Report',
     })

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-wallet2"></i> Generate Salary Records</h2>
+                <a href="{% sb_url 'finance:salary_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+            </div>
+
+            {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endif %}
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light"><h5 class="mb-0"><i class="bi bi-people"></i> Branch Employees ({{ employees|length }})</h5></div>
+                <div class="card-body">
+                    {% if employees %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Name</th><th>Type</th><th>Salary (PKR)</th></tr></thead>
+                            <tbody>
+                                {% for emp in employees %}
+                                <tr>
+                                    <td>{{ emp.user.full_name }}</td>
+                                    <td><span class="badge bg-info">{{ emp.type }}</span></td>
+                                    <td>{{ emp.salary|floatformat:0 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No active employees found in this branch.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Select the month and year to create salary records for all employees above. Records that already exist will be skipped.
+                    </div>
+                    {% crispy form %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

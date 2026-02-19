@@ -78,6 +78,17 @@
                                                value="Manager@{{ branch.form_id }}123"
                                                required>
                                     </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Manager Salary (PKR)</label>
+                                        <input type="number" 
+                                               name="manager_salary_{{ branch.form_id }}" 
+                                               class="form-control form-control-lg"
+                                               value="0"
+                                               min="0" step="1000"
+                                               placeholder="Monthly salary in PKR">
+                                        <small class="text-muted">Monthly salary for this manager</small>
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}

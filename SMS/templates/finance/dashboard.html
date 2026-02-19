@@ -10,8 +10,10 @@
         </div>
         <div class="col-md-6 text-end">
             <a href="{% sb_url 'finance:generate_fees' %}" class="btn btn-primary me-2"><i class="bi bi-plus-circle"></i> Generate Fees</a>
-            <a href="{% sb_url 'finance:fee_list' %}" class="btn btn-outline-primary me-2"><i class="bi bi-list-ul"></i> All Fees</a>
-            <a href="{% sb_url 'finance:scholarship_list' %}" class="btn btn-outline-info"><i class="bi bi-award"></i> Scholarships</a>
+            <a href="{% sb_url 'finance:fee_list' %}" class="btn btn-outline-primary me-2"><i class="bi bi-list-ul"></i> Fees</a>
+            <a href="{% sb_url 'finance:expense_list' %}" class="btn btn-outline-danger me-2"><i class="bi bi-receipt-cutoff"></i> Expenses</a>
+            <a href="{% sb_url 'finance:salary_list' %}" class="btn btn-outline-info me-2"><i class="bi bi-wallet2"></i> Salary</a>
+            <a href="{% sb_url 'finance:financial_report' %}" class="btn btn-outline-dark"><i class="bi bi-graph-up"></i> Reports</a>
         </div>
     </div>
 
@@ -104,6 +106,40 @@
             {% else %}
             <p class="text-muted mb-0">No active fee structure. <a href="{% sb_url 'finance:create_fee_structure' %}">Create one</a></p>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Access -->
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-danger h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-receipt-cutoff fs-1 text-danger"></i>
+                    <h5 class="mt-2">Expenses</h5>
+                    <p class="text-muted">PKR {{ total_expenses|floatformat:0 }}</p>
+                    <a href="{% sb_url 'finance:expense_list' %}" class="btn btn-outline-danger btn-sm">View Expenses</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-info h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-wallet2 fs-1 text-info"></i>
+                    <h5 class="mt-2">Salaries</h5>
+                    <p class="text-muted">PKR {{ total_salaries|floatformat:0 }}</p>
+                    <a href="{% sb_url 'finance:salary_list' %}" class="btn btn-outline-info btn-sm">View Salaries</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-dark h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up fs-1 text-dark"></i>
+                    <h5 class="mt-2">Financial Reports</h5>
+                    <p class="text-muted">Income, Expenses & Profit</p>
+                    <a href="{% sb_url 'finance:financial_report' %}" class="btn btn-outline-dark btn-sm">View Reports</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

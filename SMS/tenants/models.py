@@ -116,6 +116,12 @@ class Branch(models.Model):
     is_main_branch = models.BooleanField(default=False, help_text="Is this the main branch?")
     is_active = models.BooleanField(default=True)
     
+    # Manager salary
+    manager_salary = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        verbose_name="Manager Salary (PKR)"
+    )
+
     # Temporary credentials (to be shown to principal)
     manager_temp_email = models.EmailField(blank=True, verbose_name="Manager Temporary Email")
     manager_temp_password = models.CharField(max_length=100, blank=True, verbose_name="Manager Temporary Password")

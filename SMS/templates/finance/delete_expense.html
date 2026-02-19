@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-danger">
+                <div class="card-header bg-danger text-white"><h4 class="mb-0"><i class="bi bi-trash"></i> Delete Expense</h4></div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> This will permanently delete this expense.</div>
+                    <table class="table table-bordered mb-4">
+                        <tr><th>Title</th><td>{{ expense.title }}</td></tr>
+                        <tr><th>Category</th><td>{{ expense.get_category_display }}</td></tr>
+                        <tr><th>Amount</th><td>PKR {{ expense.amount|floatformat:2 }}</td></tr>
+                        <tr><th>Date</th><td>{{ expense.expense_date|date:"M d, Y" }}</td></tr>
+                    </table>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-3 justify-content-end">
+                            <a href="{% sb_url 'finance:expense_list' %}" class="btn btn-secondary btn-lg">Cancel</a>
+                            <button type="submit" class="btn btn-danger btn-lg"><i class="bi bi-trash"></i> Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

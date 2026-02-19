@@ -480,7 +480,7 @@ def edit_my_profile(request):
 def change_credentials(request, user_id):
     """Principal/Manager can change email and password of any user in their school."""
     actor = request.user
-    school = get_user_school(actor)
+    school = get_user_school(actor, request)
     if not school:
         return _get_dashboard_redirect()
 

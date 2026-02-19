@@ -90,7 +90,7 @@ class StaffCreationStep1Form(forms.Form):
     city = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'placeholder': 'City', 'class': 'form-control'}), label="City")
     qualification = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'placeholder': 'Qualification', 'class': 'form-control'}), label="Qualification")
     experience_years = forms.IntegerField(required=False, initial=0, widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}), label="Years of Experience")
-    salary = forms.DecimalField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': 1000}), label="Salary (PKR)")
+    salary = forms.DecimalField(required=True, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': 1000, 'placeholder': 'Monthly salary in PKR'}), label="Salary (PKR) *")
     cnic = forms.CharField(max_length=15, required=False, widget=forms.TextInput(attrs={'placeholder': '12345-1234567-1', 'class': 'form-control'}), label="CNIC")
 
     def __init__(self, *args, branch=None, **kwargs):

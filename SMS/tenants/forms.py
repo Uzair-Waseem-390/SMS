@@ -284,6 +284,20 @@ class ManagerCredentialsForm(forms.Form):
                 }),
                 label=f'Confirm Password for {branch.name}'
             )
+
+            # Manager salary field
+            self.fields[f'manager_salary_{form_id}'] = forms.DecimalField(
+                required=False,
+                initial=0,
+                min_value=0,
+                widget=forms.NumberInput(attrs={
+                    'placeholder': 'Salary in PKR',
+                    'class': 'form-control',
+                    'step': '1000',
+                }),
+                label=f'Manager Salary for {branch.name} (PKR)',
+                help_text='Monthly salary for this branch manager.'
+            )
     
     def clean(self):
         """Validate that passwords match for each branch."""

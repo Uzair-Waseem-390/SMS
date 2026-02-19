@@ -217,6 +217,8 @@ def handle_step3(request):
                     payment_verified=True,  # Managers don't need payment verification
                 )
                 
+                manager_salary = form.cleaned_data.get(f'manager_salary_{form_id}') or Decimal('0')
+
                 # Create branch
                 branch = Branch.objects.create(
                     name=branch_info['name'],
@@ -226,6 +228,7 @@ def handle_step3(request):
                     phone=branch_info.get('phone', ''),
                     email=branch_info.get('email', ''),
                     manager=manager_user,
+                    manager_salary=manager_salary,
                     manager_temp_email=manager_email,
                     manager_temp_password=manager_password,
                     is_main_branch=(i == 0)  # First branch is main branch

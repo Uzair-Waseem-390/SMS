@@ -25,6 +25,24 @@ SCHOLARSHIP_TYPE_CHOICES = [
     ('fixed', 'Fixed Amount'),
 ]
 
+EXPENSE_CATEGORY_CHOICES = [
+    ('rent', 'Rent'),
+    ('electricity', 'Electricity'),
+    ('water', 'Water'),
+    ('internet', 'Internet'),
+    ('maintenance', 'Maintenance'),
+    ('supplies', 'Supplies / Stationery'),
+    ('transport', 'Transport'),
+    ('furniture', 'Furniture'),
+    ('events', 'Events'),
+    ('other', 'Other'),
+]
+
+SALARY_STATUS_CHOICES = [
+    ('unpaid', 'Unpaid'),
+    ('paid', 'Paid'),
+]
+
 
 class BranchFeeStructure(models.Model):
     """
@@ -253,3 +271,107 @@ class StudentFee(models.Model):
             self.received_by = received_by
             self.received_by_role = received_by.get_user_type_display()
         self.save()
+
+
+class Expense(models.Model):
+    """Tracks branch expenses (rent, utilities, supplies, etc.). Salary is handled separately."""
+
+    branch = models.ForeignKey(
+        'tenants.Branch', on_delete=models.CASCADE,
+        related_name='expenses', verbose_name="Branch"
+    )
+    school = models.ForeignKey(
+        'tenants.SchoolTenant', on_delete=models.CASCADE,
+        related_name='expenses', verbose_name="School"
+    )
+
+    title = models.CharField(max_length=255, verbose_name="Expense Title")
+    category = models.CharField(max_length=30, choices=EXPENSE_CATEGORY_CHOICES, verbose_name="Category")
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Amount (PKR)")
+    description = models.TextField(blank=True, verbose_name="Description")
+    expense_date = models.DateField(default=timezone.now, verbose_name="Expense Date")
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, related_name='created_expenses'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Expense"
+        verbose_name_plural = "Expenses"
+        ordering = ['-expense_date', '-created_at']
+        indexes = [
+            models.Index(fields=['branch', 'expense_date']),
+            models.Index(fields=['category']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} - PKR {self.amount} ({self.get_category_display()})"
+
+
+class SalaryRecord(models.Model):
+    """
+    Monthly salary record for each employee.
+    Generated per month/year per employee, then marked as paid when disbursed.
+    """
+
+    branch = models.ForeignKey(
+        'tenants.Branch', on_delete=models.CASCADE,
+        related_name='salary_records', verbose_name="Branch"
+    )
+    school = models.ForeignKey(
+        'tenants.SchoolTenant', on_delete=models.CASCADE,
+        related_name='salary_records', verbose_name="School"
+    )
+
+    employee = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='salary_records', verbose_name="Employee"
+    )
+
+    employee_type = models.CharField(max_length=30, blank=True, verbose_name="Employee Type")
+    salary_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Salary Amount (PKR)")
+
+    month = models.PositiveIntegerField(verbose_name="Month (1-12)")
+    year = models.PositiveIntegerField(verbose_name="Year")
+
+    status = models.CharField(max_length=10, choices=SALARY_STATUS_CHOICES, default='unpaid', verbose_name="Status")
+    description = models.TextField(blank=True, verbose_name="Notes / Description")
+
+    payment_date = models.DateField(null=True, blank=True, verbose_name="Payment Date")
+    paid_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='salaries_paid', verbose_name="Paid By"
+    )
+    paid_by_role = models.CharField(max_length=30, blank=True, verbose_name="Paid By Role")
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, related_name='salaries_created', verbose_name="Created By"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Salary Record"
+        verbose_name_plural = "Salary Records"
+        ordering = ['-year', '-month', 'employee__full_name']
+        unique_together = ['employee', 'month', 'year']
+        indexes = [
+            models.Index(fields=['branch', 'month', 'year']),
+            models.Index(fields=['status']),
+        ]
+
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.get_month_display()} {self.year} - {self.get_status_display()}"
+
+    def get_month_display(self):
+        import calendar
+        return calendar.month_name[self.month]
+
+    @property
+    def month_year_label(self):
+        import calendar
+        return f"{calendar.month_name[self.month]} {self.year}"

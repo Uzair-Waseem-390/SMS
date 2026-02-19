@@ -30,4 +30,20 @@ urlpatterns = [
     # Special fee edit/delete
     path('fees/<int:fee_id>/edit-special/', views.edit_special_fee, name='edit_special_fee'),
     path('fees/<int:fee_id>/delete-special/', views.delete_special_fee, name='delete_special_fee'),
+
+    # Expenses
+    path('expenses/', views.expense_list, name='expense_list'),
+    path('expenses/add/', views.create_expense, name='create_expense'),
+    path('expenses/<int:pk>/edit/', views.edit_expense, name='edit_expense'),
+    path('expenses/<int:pk>/delete/', views.delete_expense, name='delete_expense'),
+
+    # Salary
+    path('salary/', views.salary_list, name='salary_list'),
+    path('salary/generate/', views.generate_salary, name='generate_salary'),
+    path('salary/<int:pk>/edit/', views.edit_salary, name='edit_salary'),
+    path('salary/<int:pk>/delete/', views.delete_salary, name='delete_salary'),
+    path('salary/pay/', views.pay_salary, name='pay_salary'),
+
+    # Financial Reports
+    path('reports/', views.financial_report, name='financial_report'),
 ]

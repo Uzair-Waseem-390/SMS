@@ -3,7 +3,12 @@ from django.utils import timezone
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset, HTML
 from crispy_forms.bootstrap import FormActions
-from .models import BranchFeeStructure, Scholarship, StudentFee, FREQUENCY_CHOICES, SCHOLARSHIP_TYPE_CHOICES, FEE_TYPE_CHOICES
+from .models import (
+    BranchFeeStructure, Scholarship, StudentFee, Expense, SalaryRecord,
+    FREQUENCY_CHOICES, SCHOLARSHIP_TYPE_CHOICES, FEE_TYPE_CHOICES,
+    EXPENSE_CATEGORY_CHOICES,
+)
+import calendar
 from tenants.models import Branch
 from academics.models import Class, Section
 
@@ -257,4 +262,84 @@ class EditSpecialFeeForm(forms.Form):
                 Column('amount', css_class='col-md-4 mb-3'),
                 Column('due_date', css_class='col-md-4 mb-3')),
             FormActions(Submit('save', 'Update Special Fee', css_class='btn btn-primary btn-lg')),
+        )
+
+
+class ExpenseForm(forms.ModelForm):
+    class Meta:
+        model = Expense
+        fields = ['title', 'category', 'amount', 'expense_date', 'description']
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. Monthly Rent', 'class': 'form-control'}),
+            'amount': forms.NumberInput(attrs={'placeholder': 'Amount in PKR', 'class': 'form-control', 'step': '0.01'}),
+            'expense_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Optional details'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.pk:
+            self.fields['expense_date'].initial = timezone.now().date()
+        btn_label = 'Update Expense' if self.instance.pk else 'Add Expense'
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Row(Column('title', css_class='col-md-6 mb-3'), Column('category', css_class='col-md-6 mb-3')),
+            Row(Column('amount', css_class='col-md-6 mb-3'), Column('expense_date', css_class='col-md-6 mb-3')),
+            'description',
+            FormActions(Submit('submit', btn_label, css_class='btn btn-primary btn-lg')),
+        )
+
+
+MONTH_CHOICES = [(i, calendar.month_name[i]) for i in range(1, 13)]
+
+
+class GenerateSalaryForm(forms.Form):
+    """Form for generating salary records for all employees of a branch for a given month."""
+
+    month = forms.ChoiceField(
+        choices=MONTH_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label="Month"
+    )
+    year = forms.IntegerField(
+        min_value=2020, max_value=2099,
+        widget=forms.NumberInput(attrs={'class': 'form-control'}),
+        label="Year"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        now = timezone.now()
+        self.fields['month'].initial = now.month
+        self.fields['year'].initial = now.year
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Row(Column('month', css_class='col-md-6 mb-3'), Column('year', css_class='col-md-6 mb-3')),
+            FormActions(Submit('generate', 'Generate Salary Records', css_class='btn btn-primary btn-lg')),
+        )
+
+
+class EditSalaryForm(forms.Form):
+    """Edit salary amount for a specific salary record."""
+
+    salary_amount = forms.DecimalField(
+        max_digits=10, decimal_places=2, min_value=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Amount in PKR'}),
+        label="Salary Amount (PKR)"
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Notes'}),
+        label="Notes"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Row(Column('salary_amount', css_class='col-md-6 mb-3'), Column('description', css_class='col-md-6 mb-3')),
+            FormActions(Submit('save', 'Update Salary', css_class='btn btn-primary btn-lg')),
         )

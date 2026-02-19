@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-cash-coin"></i> Pay Salary - {{ month_name }} {{ year }}</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% sb_url 'finance:salary_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Salary Records</a>
+        </div>
+    </div>
+
+    {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}{% endif %}
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Month</label>
+                    <select name="month" class="form-select">
+                        {% for m_val, m_name in months %}
+                        <option value="{{ m_val }}" {% if month == m_val %}selected{% endif %}>{{ m_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Year</label>
+                    <input type="number" name="year" class="form-control" value="{{ year }}">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">Load</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4"><div class="card border-primary"><div class="card-body py-2 text-center"><strong>Total:</strong> PKR {{ total|floatformat:0 }}</div></div></div>
+        <div class="col-md-4"><div class="card border-success"><div class="card-body py-2 text-center"><strong>Paid:</strong> PKR {{ paid_total|floatformat:0 }}</div></div></div>
+        <div class="col-md-4"><div class="card border-danger"><div class="card-body py-2 text-center"><strong>Unpaid:</strong> PKR {{ unpaid_total|floatformat:0 }}</div></div></div>
+    </div>
+
+    {% if records %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
+                            <th>#</th>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>Amount (PKR)</th>
+                            <th>Status</th>
+                            <th>Paid Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rec in records %}
+                        <tr class="{% if rec.status == 'paid' %}table-success{% endif %}">
+                            <td>
+                                {% if rec.status == 'unpaid' %}
+                                <input type="checkbox" name="salary_ids" value="{{ rec.pk }}" class="salary-check">
+                                {% else %}
+                                <i class="bi bi-check-circle text-success"></i>
+                                {% endif %}
+                            </td>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ rec.employee.full_name }}</td>
+                            <td><span class="badge bg-info">{{ rec.employee_type }}</span></td>
+                            <td><strong>{{ rec.salary_amount|floatformat:0 }}</strong></td>
+                            <td>
+                                {% if rec.status == 'paid' %}<span class="badge bg-success">Paid</span>
+                                {% else %}<span class="badge bg-danger">Unpaid</span>{% endif %}
+                            </td>
+                            <td>{{ rec.payment_date|date:"M d, Y"|default:"--" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <span class="text-muted">Select unpaid salaries and click "Pay Selected"</span>
+                <button type="submit" class="btn btn-success btn-lg"><i class="bi bi-cash-coin"></i> Pay Selected</button>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-wallet2 fs-1"></i>
+        <h4 class="mt-3">No salary records for {{ month_name }} {{ year }}</h4>
+        <a href="{% sb_url 'finance:generate_salary' %}" class="btn btn-primary mt-3">Generate Salary</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleAll(source) {
+    document.querySelectorAll('.salary-check').forEach(cb => cb.checked = source.checked);
+}
+</script>
+{% endblock %}
