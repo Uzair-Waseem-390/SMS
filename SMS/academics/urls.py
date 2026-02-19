@@ -19,6 +19,10 @@ urlpatterns = [
     path('sections/<int:section_id>/assign-subjects/', views.assign_subjects_to_section, name='assign_subjects'),
     path('assignments/<int:assignment_id>/remove/', views.remove_subject_from_section, name='remove_subject'),
     
+    # Student Transfer / Promotion
+    path('sections/<int:section_id>/transfer/', views.transfer_students, name='transfer_students'),
+    path('api/sections-for-class/', views.api_sections_for_class, name='api_sections_for_class'),
+
     # Subject Management
     path('subjects/', views.subject_list, name='subject_list'),
     path('subjects/create/', views.create_subject, name='create_subject'),

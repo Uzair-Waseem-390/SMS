@@ -41,6 +41,7 @@ EXTERNAL_APPS = [
     'attendance',
     'exams',
     'notification',
+    'finance',
 ]
 
 

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-arrow-left-right"></i> Transfer / Promote Students</h2>
+            <p class="text-muted mb-0">From: <strong>{{ source_section.class_obj.name }} - {{ source_section.name }}</strong></p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'academics:section_students' source_section.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Students
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+    {% endif %}
+
+    {% if students %}
+    <form method="post" id="transferForm">
+        {% csrf_token %}
+
+        <!-- Target Destination -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Select Destination</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Target Class</label>
+                        <select id="targetClass" class="form-select form-select-lg" required>
+                            <option value="">-- Select Class --</option>
+                            {% for cls in classes %}
+                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Target Section</label>
+                        <select id="targetSection" name="target_section" class="form-select form-select-lg" required disabled>
+                            <option value="">-- Select Class First --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Selection -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Select Students (<span id="selectedCount">0</span> / {{ students|length }})</h5>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">Select All</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="selectNone">Deselect All</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <input type="checkbox" class="form-check-input" id="checkAll">
+                            </th>
+                            <th>#</th>
+                            <th>Admission #</th>
+                            <th>Name</th>
+                            <th>Father's Name</th>
+                            <th>Roll #</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input student-check"
+                                       name="students" value="{{ student.id }}">
+                            </td>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ student.admission_number }}</td>
+                            <td>{{ student.full_name }}</td>
+                            <td>{{ student.father_name }}</td>
+                            <td>{{ student.roll_number|default:"--" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                <i class="bi bi-arrow-left-right"></i> Transfer <span id="submitCount">0</span> Student(s)
+            </button>
+            <a href="{% url 'academics:section_students' source_section.id %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+        </div>
+    </form>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-people fs-1"></i>
+        <h4 class="mt-3">No Students in This Section</h4>
+        <p>There are no active students to transfer.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const targetClassSel = document.getElementById('targetClass');
+    const targetSectionSel = document.getElementById('targetSection');
+    const checkAll = document.getElementById('checkAll');
+    const selectAllBtn = document.getElementById('selectAll');
+    const selectNoneBtn = document.getElementById('selectNone');
+    const studentChecks = document.querySelectorAll('.student-check');
+    const selectedCount = document.getElementById('selectedCount');
+    const submitCount = document.getElementById('submitCount');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function updateCounts() {
+        const checked = document.querySelectorAll('.student-check:checked').length;
+        selectedCount.textContent = checked;
+        submitCount.textContent = checked;
+        submitBtn.disabled = checked === 0 || !targetSectionSel.value;
+    }
+
+    // Load sections for selected class
+    targetClassSel.addEventListener('change', function() {
+        const classId = this.value;
+        targetSectionSel.innerHTML = '<option value="">Loading...</option>';
+        targetSectionSel.disabled = true;
+
+        if (!classId) {
+            targetSectionSel.innerHTML = '<option value="">-- Select Class First --</option>';
+            updateCounts();
+            return;
+        }
+
+        fetch(`{% url 'academics:api_sections_for_class' %}?class_id=${classId}`)
+            .then(r => r.json())
+            .then(data => {
+                targetSectionSel.innerHTML = '<option value="">-- Select Section --</option>';
+                data.sections.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name;
+                    targetSectionSel.appendChild(opt);
+                });
+                targetSectionSel.disabled = false;
+                updateCounts();
+            });
+    });
+
+    targetSectionSel.addEventListener('change', updateCounts);
+
+    // Check all / select all / none
+    checkAll.addEventListener('change', function() {
+        studentChecks.forEach(c => c.checked = this.checked);
+        updateCounts();
+    });
+
+    selectAllBtn.addEventListener('click', function() {
+        studentChecks.forEach(c => c.checked = true);
+        checkAll.checked = true;
+        updateCounts();
+    });
+
+    selectNoneBtn.addEventListener('click', function() {
+        studentChecks.forEach(c => c.checked = false);
+        checkAll.checked = false;
+        updateCounts();
+    });
+
+    studentChecks.forEach(c => c.addEventListener('change', function() {
+        checkAll.checked = document.querySelectorAll('.student-check:checked').length === studentChecks.length;
+        updateCounts();
+    }));
+
+    // Confirm before submitting
+    document.getElementById('transferForm').addEventListener('submit', function(e) {
+        const count = document.querySelectorAll('.student-check:checked').length;
+        const targetText = targetSectionSel.options[targetSectionSel.selectedIndex].text;
+        const targetClassText = targetClassSel.options[targetClassSel.selectedIndex].text;
+        if (!confirm(`Transfer ${count} student(s) to ${targetClassText} - ${targetText}?`)) {
+            e.preventDefault();
+        }
+    });
+
+    updateCounts();
+});
+</script>
+{% endblock %}

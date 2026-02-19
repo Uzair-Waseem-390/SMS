@@ -235,7 +235,7 @@ class PermissionAuditLog(models.Model):
         ('deny', 'Permission Denied'),
     ]
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     permission_code = models.CharField(max_length=100)
 

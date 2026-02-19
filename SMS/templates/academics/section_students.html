@@ -9,6 +9,9 @@
             <small class="text-muted">Branch: {{ branch.name }}</small>
         </div>
         <div class="col-md-6 text-end">
+            <a href="{% url 'academics:transfer_students' section.id %}" class="btn btn-warning me-2">
+                <i class="bi bi-arrow-left-right"></i> Transfer / Promote
+            </a>
             <a href="{% url 'attendance:bulk_student_attendance' section.id %}" class="btn btn-success me-2">
                 <i class="bi bi-clipboard-check"></i> Mark Attendance
             </a>

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.urls import reverse
+from django.http import JsonResponse
 from .models import Class, Section, Subject, SectionSubject
 from students.models import Student
 from .forms import (
@@ -541,3 +542,83 @@ def _get_teachers_for_branch(branch):
         return User.objects.filter(pk__in=teacher_ids, is_active=True).order_by('full_name')
     # Fallback: all teachers in system
     return User.objects.filter(user_type='teacher', is_active=True).order_by('full_name')
+
+
+# ═══ Student Transfer / Promotion ════════════════════════════════
+
+@login_required
+def api_sections_for_class(request):
+    """AJAX: Return sections for a given class_id within the user's branch."""
+    branch = get_user_branch(request.user, request)
+    class_id = request.GET.get('class_id')
+    if not branch or not class_id:
+        return JsonResponse({'sections': []})
+    sections = Section.objects.filter(
+        class_obj_id=class_id, class_obj__branch=branch, is_active=True
+    ).order_by('name').values('id', 'name')
+    return JsonResponse({'sections': list(sections)})
+
+
+@login_required
+@require_principal_or_manager()
+def transfer_students(request, section_id):
+    """
+    Transfer selected (or all) students from one section to another.
+    Used for promotions or section re-assignment within the branch.
+    """
+    branch = get_user_branch(request.user, request)
+    if not branch:
+        messages.error(request, "No branch associated with your account.")
+        return _get_dashboard_redirect()
+
+    source_section = get_object_or_404(Section, id=section_id, class_obj__branch=branch)
+    students = Student.objects.filter(section=source_section, is_active=True).order_by('first_name', 'last_name')
+
+    classes = Class.objects.filter(branch=branch, is_active=True).order_by('numeric_level', 'name')
+
+    if request.method == 'POST':
+        target_section_id = request.POST.get('target_section')
+        student_ids = request.POST.getlist('students')
+
+        if not target_section_id:
+            messages.error(request, 'Please select a target section.')
+            return render(request, 'academics/transfer_students.html', {
+                'source_section': source_section, 'students': students,
+                'classes': classes, 'title': f'Transfer Students from {source_section}',
+            })
+
+        target_section = get_object_or_404(Section, id=target_section_id, class_obj__branch=branch)
+
+        if target_section.id == source_section.id:
+            messages.error(request, 'Source and target sections are the same.')
+            return render(request, 'academics/transfer_students.html', {
+                'source_section': source_section, 'students': students,
+                'classes': classes, 'title': f'Transfer Students from {source_section}',
+            })
+
+        if not student_ids:
+            messages.error(request, 'Please select at least one student to transfer.')
+            return render(request, 'academics/transfer_students.html', {
+                'source_section': source_section, 'students': students,
+                'classes': classes, 'title': f'Transfer Students from {source_section}',
+            })
+
+        with transaction.atomic():
+            transferred = Student.objects.filter(
+                id__in=student_ids, section=source_section, is_active=True
+            ).update(section=target_section)
+
+        messages.success(
+            request,
+            f'{transferred} student(s) transferred from '
+            f'{source_section.class_obj.name}-{source_section.name} to '
+            f'{target_section.class_obj.name}-{target_section.name}.'
+        )
+        return redirect('academics:section_students', section_id=source_section.id)
+
+    return render(request, 'academics/transfer_students.html', {
+        'source_section': source_section,
+        'students': students,
+        'classes': classes,
+        'title': f'Transfer Students from {source_section}',
+    })
