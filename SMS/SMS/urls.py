@@ -20,6 +20,7 @@ scoped_patterns = [
     path('exams/', include('exams.urls')),
     path('notifications/', include('notification.urls')),
     path('finance/', include('finance.urls')),
+    path('certificate/', include('certificate.urls')),
 ]
 
 urlpatterns = [

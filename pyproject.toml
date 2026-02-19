@@ -10,4 +10,5 @@ dependencies = [
     "django-crispy-forms>=2.5",
     "dotenv>=0.9.9",
     "pillow>=12.1.1",
+    "weasyprint>=68.1",
 ]

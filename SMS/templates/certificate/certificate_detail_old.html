@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load school_urls %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6"><h2><i class="bi bi-award"></i> Certificate {{ certificate.serial_number }}</h2></div>
+        <div class="col-md-6 text-end">
+            {% if certificate.generated_pdf %}
+            <a href="{% sb_url 'certificate:certificate_download' certificate.pk %}" class="btn btn-success me-2"><i class="bi bi-download"></i> Download PDF</a>
+            <a href="{% sb_url 'certificate:certificate_download' certificate.pk %}" target="_blank" class="btn btn-outline-primary me-2"><i class="bi bi-printer"></i> Print</a>
+            {% endif %}
+            <a href="{% sb_url 'certificate:certificate_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Back</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-borderless">
+                <tr><th width="200">Type</th><td>{{ certificate.template.get_template_type_display }}</td></tr>
+                <tr><th>Recipient</th><td>{{ certificate.recipient_name }}</td></tr>
+                <tr><th>Serial Number</th><td><code>{{ certificate.serial_number }}</code></td></tr>
+                <tr><th>Issued Date</th><td>{{ certificate.issued_date|date:"F d, Y" }}</td></tr>
+                <tr><th>Issued By</th><td>{{ certificate.issued_by.full_name|default:"--" }}</td></tr>
+                <tr><th>Branch</th><td>{{ certificate.branch.name }}</td></tr>
+                {% if certificate.generated_pdf %}
+                <tr><th>PDF</th><td><a href="{% sb_url 'certificate:certificate_download' certificate.pk %}">Download certificate PDF</a></td></tr>
+                {% endif %}
+            </table>
+            <p class="text-muted small mb-0"><i class="bi bi-lock"></i> This certificate cannot be edited once issued.</p>
+        </div>
+    </div>
+
+    {% if certificate.custom_data %}
+    <div class="card shadow-sm mt-3">
+        <div class="card-header bg-light">Certificate Data</div>
+        <div class="card-body">
+            <table class="table table-sm">
+                {% for k, v in certificate.custom_data.items %}
+                <tr><td class="text-muted">{{ k }}</td><td>{{ v }}</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -42,6 +42,7 @@ EXTERNAL_APPS = [
     'exams',
     'notification',
     'finance',
+    'certificate',
 ]
 
 

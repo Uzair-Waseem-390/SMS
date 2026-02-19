@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Certificate - {{ certificate.serial_number }}</title>
+    <style>
+        @page { size: A4; margin: 0; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            background: #f0f0f0;
+        }
+
+        /* Screen-only toolbar */
+        .print-toolbar {
+            background: #343a40;
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .print-toolbar button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .print-toolbar button:hover { background: #218838; }
+        .print-toolbar .tip {
+            color: #adb5bd;
+            font-size: 13px;
+        }
+        .print-toolbar a {
+            color: #adb5bd;
+            text-decoration: none;
+            font-size: 13px;
+            margin-left: auto;
+        }
+        .print-toolbar a:hover { color: white; }
+
+        /* Certificate page */
+        .cert-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 30px auto;
+            background: white;
+            padding: 2cm 2.5cm;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        /* Header */
+        .cert-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .cert-school-name {
+            font-size: 22pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .cert-branch-name {
+            font-size: 13pt;
+            margin-top: 4px;
+            color: #444;
+        }
+
+        .cert-divider {
+            border: none;
+            border-top: 2px solid #333;
+            margin: 14px 0 4px;
+        }
+        .cert-divider-thin {
+            border: none;
+            border-top: 1px solid #aaa;
+            margin: 0 0 24px;
+        }
+
+        /* Certificate type title */
+        .cert-title {
+            text-align: center;
+            font-size: 17pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 28px;
+            text-decoration: underline;
+            text-underline-offset: 5px;
+        }
+
+        /* Body content */
+        .cert-body {
+            text-align: justify;
+            line-height: 2;
+            font-size: 12pt;
+        }
+        .cert-body p {
+            margin-bottom: 14px;
+        }
+
+        /* Footer row */
+        .cert-footer {
+            position: absolute;
+            bottom: 2cm;
+            left: 2.5cm;
+            right: 2.5cm;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .cert-serial {
+            font-size: 9pt;
+            color: #555;
+            line-height: 1.6;
+        }
+        .cert-signature {
+            text-align: center;
+        }
+        .cert-signature-line {
+            border-top: 1px solid #333;
+            width: 180px;
+            margin: 0 auto 5px;
+        }
+        .cert-signature-label {
+            font-size: 10pt;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* Hide toolbar when printing */
+        @media print {
+            body { background: white; }
+            .print-toolbar { display: none !important; }
+            .cert-page {
+                margin: 0;
+                box-shadow: none;
+                width: 100%;
+                min-height: 100vh;
+                padding: 2cm 2.5cm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Toolbar (hidden on print) -->
+<div class="print-toolbar">
+    <button onclick="window.print()">&#128438; Print / Save as PDF</button>
+    <span class="tip">Tip: In the print dialog, select <strong>"Save as PDF"</strong> as the destination to download a PDF.</span>
+    <a href="javascript:history.back()">&#8592; Back</a>
+</div>
+
+<!-- Certificate page -->
+<div class="cert-page">
+
+    <div class="cert-header">
+        <div class="cert-school-name">{{ certificate.school.name }}</div>
+        <div class="cert-branch-name">{{ certificate.branch.name }}</div>
+    </div>
+
+    <hr class="cert-divider">
+    <hr class="cert-divider-thin">
+
+    <div class="cert-title">{{ certificate.template.get_template_type_display }}</div>
+
+    <div class="cert-body">
+        {{ html_body|safe }}
+    </div>
+
+    <div class="cert-footer">
+        <div class="cert-serial">
+            <strong>Serial No:</strong> {{ certificate.serial_number }}<br>
+            <strong>Issue Date:</strong> {{ certificate.issued_date|date:"F d, Y" }}<br>
+            <strong>Issued By:</strong> {{ certificate.issued_by.full_name|default:"--" }}
+        </div>
+        <div class="cert-signature">
+            <div class="cert-signature-line"></div>
+            <div class="cert-signature-label">
+                Principal / Authorized Signatory<br>
+                {{ certificate.branch.name }}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
