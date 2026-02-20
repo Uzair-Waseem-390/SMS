@@ -1,53 +1,64 @@
 <header class="header-bar">
-    <div class="d-flex align-items-center w-100">
-        <!-- mobile toggle button (static) -->
-        <button class="btn btn-light d-md-none me-2" type="button" style="border-radius: 40px;">
-            <i class="bi bi-list"></i>
-        </button>
-        <span class="school-name-header">🏫 {{ current_school.name|default:"School Management System" }}</span>
-        <!-- search area -->
-        <!-- Branch Switcher (Principal Only) -->
-        <div class="ms-auto me-3">
-            {% if principal_branches|length > 1 %}
-            <div class="dropdown">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    <i class="bi bi-diagram-3 me-1"></i>
-                    {{ current_branch.name|default:"Select Branch" }}
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow" style="max-height: 300px; overflow-y: auto;">
-                    <li>
-                        <h6 class="dropdown-header">Switch Branch</h6>
-                    </li>
-                    {% for b in principal_branches %}
-                    <li>
-                        <a class="dropdown-item {% if current_branch.id == b.id %}active{% endif %}"
-                            href="{% url 'tenants:switch_branch' %}?branch_id={{ b.id }}">
-                            {% if b.is_main_branch %}<i class="bi bi-star-fill text-warning me-1"></i>{% endif %}
-                            {{ b.name }}
-                            {% if current_branch.id == b.id %}<i class="bi bi-check2 ms-auto"></i>{% endif %}
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% elif current_branch %}
-            <span class="badge bg-primary d-none d-md-inline-block p-2">
-                <i class="bi bi-house me-1"></i> {{ current_branch.name }}
-            </span>
-            {% endif %}
+    <!-- Mobile sidebar toggle -->
+    <button class="sidebar-toggle" id="sidebarToggleBtn" type="button" aria-label="Toggle sidebar">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- School name -->
+    <span class="school-name-header">
+        {{ current_school.name|default:"School Management System" }}
+    </span>
+
+    <!-- Branch Switcher (Principal Only) -->
+    <div class="ms-auto d-flex align-items-center gap-3">
+        {% if principal_branches|length > 1 %}
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle d-flex align-items-center gap-2" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-diagram-3"></i>
+                <span class="d-none d-sm-inline">{{ current_branch.name|default:"Select Branch" }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 210px;">
+                <li>
+                    <h6 class="dropdown-header">
+                        <i class="bi bi-shuffle me-1"></i> Switch Branch
+                    </h6>
+                </li>
+                {% for b in principal_branches %}
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 {% if current_branch.id == b.id %}active{% endif %}"
+                        href="{% url 'tenants:switch_branch' %}?branch_id={{ b.id }}">
+                        {% if b.is_main_branch %}
+                        <i class="bi bi-star-fill text-warning" style="font-size:0.72rem;"></i>
+                        {% else %}
+                        <i class="bi bi-building" style="font-size:0.72rem; opacity:0.4;"></i>
+                        {% endif %}
+                        <span>{{ b.name }}</span>
+                        {% if current_branch.id == b.id %}
+                        <i class="bi bi-check2 ms-auto"></i>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-        <!-- user avatar placeholder -->
-        <div class="ms-3 d-flex align-items-center">
-            <i class="bi bi-person-circle fs-3" style="color: #0d9488;"></i>
-            <span class="ms-2 d-none d-md-inline">
-                {% if request.user.is_authenticated %}
-                {{ request.user.get_full_name|default:request.user.email }}
-                <small class="d-block text-muted" style="font-size: 0.7rem;">{{ request.user.user_type|title }}</small>
-                {% else %}
-                Guest
-                {% endif %}
-            </span>
+        {% elif current_branch %}
+        <span class="badge bg-primary d-none d-md-inline-flex align-items-center gap-1">
+            <i class="bi bi-building"></i> {{ current_branch.name }}
+        </span>
+        {% endif %}
+
+        <!-- User info -->
+        <div class="user-pill">
+            <div class="user-avatar">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            {% if request.user.is_authenticated %}
+            <div class="user-info d-none d-md-block">
+                <span class="user-name">{{ request.user.get_full_name|default:request.user.email }}</span>
+                <span class="user-role">{{ request.user.user_type|title }}</span>
+            </div>
+            {% endif %}
         </div>
     </div>
 </header>

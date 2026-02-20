@@ -67,6 +67,7 @@ class Certificate(models.Model):
         related_name='certificates',
         verbose_name="Student",
     )
+
     employee = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -78,10 +79,12 @@ class Certificate(models.Model):
 
     template = models.ForeignKey(
         CertificateTemplate,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,  # or CASCADE if you want full deletion
+        null=True,                  # add this if using SET_NULL
         related_name='certificates',
         verbose_name="Template",
     )
+
     branch = models.ForeignKey(
         'tenants.Branch',
         on_delete=models.CASCADE,
@@ -130,10 +133,15 @@ class Certificate(models.Model):
             models.Index(fields=['serial_number']),
         ]
 
+
     def __str__(self):
         if self.student:
-            return f"{self.get_template_display()} - {self.student.full_name} ({self.serial_number})"
-        return f"{self.get_template_display()} - {self.employee.full_name if self.employee else 'N/A'} ({self.serial_number})"
+            return f"{self.get_template_display} - {self.student.full_name} ({self.serial_number})"
+        return f"{self.get_template_display} - {self.employee.full_name if self.employee else 'N/A'} ({self.serial_number})"
+    # def __str__(self):
+    #     if self.student:
+    #         return f"{self.get_template_display()} - {self.student.full_name} ({self.serial_number})"
+    #     return f"{self.get_template_display()} - {self.employee.full_name if self.employee else 'N/A'} ({self.serial_number})"
 
     @property
     def get_template_display(self):

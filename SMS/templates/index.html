@@ -1,15 +1,2014 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
-<div class="container-fluid">
-    <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
-        <div class="card-body p-5 text-center">
-            <div class="mb-4">
-                <i class="bi bi-building" style="font-size: 4rem; color: #0d9488;"></i>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduCore — Multi-Branch School Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ─── RESET & BASE ─────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #080f14;
+            color: #e2eaf2;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        /* ─── CSS VARIABLES ────────────────────────────────────────── */
+        :root {
+            --teal: #0d9488;
+            --teal-lt: #14b8a6;
+            --teal-glow: rgba(13, 148, 136, .28);
+            --teal-sub: rgba(13, 148, 136, .10);
+            --bg: #080f14;
+            --bg2: #0d1820;
+            --bg3: #0f2030;
+            --border: rgba(255, 255, 255, .07);
+            --border2: rgba(13, 148, 136, .25);
+            --text: #e2eaf2;
+            --muted: #8fa3b4;
+            --white: #ffffff;
+        }
+
+        /* ─── SCROLLBAR ────────────────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--teal);
+            border-radius: 99px;
+        }
+
+        /* ─── NOISE TEXTURE OVERLAY ────────────────────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: .4;
+        }
+
+        /* ─── TYPOGRAPHY ───────────────────────────────────────────── */
+        .display {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+        }
+
+        .heading {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+        }
+
+        .label {
+            font-family: 'Sora', sans-serif;
+            font-size: .72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+        }
+
+        /* ─── GRADIENT TEXT ────────────────────────────────────────── */
+        .grad {
+            background: linear-gradient(120deg, #5eead4 0%, #0d9488 50%, #99f6e4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ─── BUTTONS ──────────────────────────────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            font-family: 'Sora', sans-serif;
+            font-weight: 600;
+            font-size: .9rem;
+            padding: .72rem 1.6rem;
+            border-radius: 9px;
+            border: none;
+            cursor: pointer;
+            transition: all .22s cubic-bezier(.22, 1, .36, 1);
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--teal) 0%, #0f766e 100%);
+            color: #fff;
+            box-shadow: 0 4px 22px var(--teal-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px var(--teal-glow);
+            filter: brightness(1.08);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--teal-lt);
+            border: 1.5px solid var(--border2);
+        }
+
+        .btn-ghost:hover {
+            background: var(--teal-sub);
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: .52rem 1.2rem;
+            font-size: .82rem;
+            border-radius: 7px;
+        }
+
+        .btn-nav-login {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-family: 'Sora', sans-serif;
+            font-weight: 500;
+            font-size: .83rem;
+            padding: .45rem 1.1rem;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all .18s;
+        }
+
+        .btn-nav-login:hover {
+            border-color: var(--border2);
+            color: var(--teal-lt);
+        }
+
+        .btn-nav-reg {
+            background: linear-gradient(135deg, var(--teal), #0f766e);
+            color: #fff;
+            font-family: 'Sora', sans-serif;
+            font-weight: 600;
+            font-size: .83rem;
+            padding: .45rem 1.2rem;
+            border-radius: 7px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 12px var(--teal-glow);
+            transition: all .18s;
+        }
+
+        .btn-nav-reg:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        /* ─── CARD ─────────────────────────────────────────────────── */
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform .22s cubic-bezier(.22, 1, .36, 1), box-shadow .22s, border-color .22s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+            border-color: var(--border2);
+        }
+
+        /* ─── TAG PILL ──────────────────────────────────────────────── */
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: var(--teal-sub);
+            border: 1px solid var(--border2);
+            color: var(--teal-lt);
+            padding: .3rem .9rem;
+            border-radius: 99px;
+            font-size: .75rem;
+            font-family: 'Sora', sans-serif;
+            font-weight: 600;
+            letter-spacing: .04em;
+        }
+
+        .tag-pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--teal-lt);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(.7)
+            }
+        }
+
+        /* ─── SECTION SPACING ───────────────────────────────────────── */
+        section {
+            padding: 100px 0;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+
+        .container-wide {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+
+        /* ─── SECTION LABEL ─────────────────────────────────────────── */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .section-label-line {
+            width: 28px;
+            height: 2px;
+            background: var(--teal);
+            border-radius: 2px;
+        }
+
+        .section-label-text {
+            color: var(--teal-lt);
+            font-family: 'Sora', sans-serif;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        /* ─── DIVIDER ───────────────────────────────────────────────── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       NAVBAR
+    ══════════════════════════════════════════════════════════════ */
+        #navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 0 0;
+            transition: all .3s cubic-bezier(.22, 1, .36, 1);
+        }
+
+        #navbar.scrolled {
+            background: rgba(8, 15, 20, .88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, .3);
+        }
+
+        .nav-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 28px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+        }
+
+        .nav-brand-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--teal), #0f766e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 14px var(--teal-glow);
+        }
+
+        .nav-brand-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: #fff;
+        }
+
+        .nav-brand-name {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #fff;
+            letter-spacing: -.02em;
+        }
+
+        .nav-brand-name span {
+            color: var(--teal-lt);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════════════════════════ */
+        .hero {
+            min-height: 100vh;
+            padding-top: 120px;
+            background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(13, 148, 136, .18) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 20%, rgba(20, 184, 166, .08) 0%, transparent 60%),
+                var(--bg);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, .025) 1px, transparent 1px);
+            background-size: 36px 36px;
+            pointer-events: none;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-eyebrow {
+            margin-bottom: 1.4rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.4rem, 5vw, 3.9rem);
+            color: #fff;
+            margin-bottom: 1.3rem;
+        }
+
+        .hero-title em {
+            font-style: normal;
+        }
+
+        .hero-sub {
+            font-size: 1.05rem;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 500px;
+            margin-bottom: 2.2rem;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: .9rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-num {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            color: var(--muted);
+            margin-top: .3rem;
+        }
+
+        .stat-sep {
+            width: 1px;
+            background: var(--border);
+            height: 40px;
+            align-self: center;
+        }
+
+        /* Hero image side */
+        .hero-visual {
+            position: relative;
+        }
+
+        .hero-screen {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border2);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .6), 0 0 60px var(--teal-glow);
+            transform: perspective(1000px) rotateY(-4deg) rotateX(2deg);
+            transition: transform .6s cubic-bezier(.22, 1, .36, 1);
+        }
+
+        .hero-screen:hover {
+            transform: perspective(1000px) rotateY(-1deg) rotateX(0deg);
+        }
+
+        .hero-screen img {
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .hero-screen-bar {
+            height: 34px;
+            background: var(--bg3);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            gap: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-r {
+            background: #ff5f57;
+        }
+
+        .dot-y {
+            background: #febc2e;
+        }
+
+        .dot-g {
+            background: #28c840;
+        }
+
+        .hero-badge {
+            position: absolute;
+            top: -18px;
+            right: -18px;
+            background: linear-gradient(135deg, var(--teal), #0f766e);
+            color: #fff;
+            border-radius: 12px;
+            padding: .6rem 1rem;
+            font-family: 'Sora', sans-serif;
+            font-size: .78rem;
+            font-weight: 600;
+            box-shadow: 0 8px 24px var(--teal-glow);
+            white-space: nowrap;
+        }
+
+        .hero-float {
+            position: absolute;
+            bottom: -20px;
+            left: -30px;
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: .7rem 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+            animation: float-card 4s ease-in-out infinite;
+        }
+
+        @keyframes float-card {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-8px)
+            }
+        }
+
+        .hero-float-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: var(--teal-sub);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--teal-lt);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .hero-float-text span {
+            display: block;
+            font-size: .72rem;
+            color: var(--muted);
+        }
+
+        .hero-float-text strong {
+            font-family: 'Sora', sans-serif;
+            font-size: .88rem;
+            color: #fff;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       TRUSTED STRIP
+    ══════════════════════════════════════════════════════════════ */
+        .trusted-strip {
+            padding: 28px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg2);
+        }
+
+        .trusted-inner {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .trusted-label {
+            font-size: .76rem;
+            color: var(--muted);
+            font-family: 'Sora', sans-serif;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .trusted-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
+        }
+
+        .trusted-items {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .trusted-item {
+            font-family: 'Sora', sans-serif;
+            font-size: .85rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .35);
+            transition: color .2s;
+        }
+
+        .trusted-item:hover {
+            color: rgba(255, 255, 255, .65);
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       FEATURES — ACADEMIC
+    ══════════════════════════════════════════════════════════════ */
+        .feat-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .feat-header h2 {
+            font-size: clamp(1.9rem, 3.5vw, 2.9rem);
+            color: #fff;
+            margin-bottom: .9rem;
+        }
+
+        .feat-header p {
+            font-size: 1rem;
+            color: var(--muted);
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* 3-col grid cards */
+        .cards-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .cards-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .feat-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all .25s cubic-bezier(.22, 1, .36, 1);
+        }
+
+        .feat-card:hover {
+            border-color: var(--border2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .3), 0 0 30px var(--teal-glow);
+            transform: translateY(-4px);
+        }
+
+        .feat-card-img {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .feat-card-img::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to top, var(--bg2), transparent);
+        }
+
+        .feat-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .5s cubic-bezier(.22, 1, .36, 1);
+        }
+
+        .feat-card:hover .feat-card-img img {
+            transform: scale(1.05);
+        }
+
+        .feat-card-body {
+            padding: 1.4rem 1.4rem 1.6rem;
+        }
+
+        .feat-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--teal-sub);
+            border: 1px solid var(--border2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: .9rem;
+        }
+
+        .feat-card-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--teal-lt);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .feat-card-title {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 1.02rem;
+            color: #fff;
+            margin-bottom: .5rem;
+        }
+
+        .feat-card-desc {
+            font-size: .875rem;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       FEATURE SECTIONS — alternating layouts
+    ══════════════════════════════════════════════════════════════ */
+        .feat-block {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .feat-block.reverse {
+            direction: rtl;
+        }
+
+        .feat-block.reverse>* {
+            direction: ltr;
+        }
+
+        .feat-content h2 {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .feat-content p {
+            font-size: .95rem;
+            color: var(--muted);
+            line-height: 1.75;
+            margin-bottom: 1.6rem;
+        }
+
+        .feat-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: .65rem;
+        }
+
+        .feat-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: .7rem;
+            font-size: .88rem;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .feat-list li::before {
+            content: '';
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--teal-sub);
+            border: 1px solid var(--border2);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2314b8a6' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 10px;
+            margin-top: 1px;
+        }
+
+        .feat-list li strong {
+            color: rgba(255, 255, 255, .8);
+            font-weight: 500;
+        }
+
+        .feat-visual {
+            position: relative;
+        }
+
+        .feat-img-wrap {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border2);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .5), 0 0 40px var(--teal-glow);
+        }
+
+        .feat-img-wrap img {
+            width: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .feat-img-secondary {
+            position: absolute;
+            bottom: -24px;
+            right: -24px;
+            width: 56%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+        }
+
+        .feat-img-secondary img {
+            width: 100%;
+            object-fit: cover;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       FINANCE BIG SECTION
+    ══════════════════════════════════════════════════════════════ */
+        .finance-section {
+            background: radial-gradient(ellipse 70% 50% at 50% 50%, rgba(13, 148, 136, .12) 0%, transparent 70%),
+                var(--bg2);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .finance-inner {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 70px;
+            align-items: center;
+        }
+
+        .finance-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .finance-mini-card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.1rem 1.2rem;
+            transition: all .22s cubic-bezier(.22, 1, .36, 1);
+        }
+
+        .finance-mini-card:hover {
+            border-color: var(--border2);
+            transform: translateY(-3px);
+        }
+
+        .fmc-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--teal-sub);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: .8rem;
+        }
+
+        .fmc-icon svg {
+            width: 15px;
+            height: 15px;
+            stroke: var(--teal-lt);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .fmc-title {
+            font-family: 'Sora', sans-serif;
+            font-size: .82rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: .3rem;
+        }
+
+        .fmc-desc {
+            font-size: .77rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .finance-big-img {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border2);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, .5), 0 0 50px var(--teal-glow);
+        }
+
+        .finance-big-img img {
+            width: 100%;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       WHY SECTION
+    ══════════════════════════════════════════════════════════════ */
+        .why-section {
+            background: var(--bg);
+        }
+
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .why-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem 1.4rem;
+            transition: all .22s cubic-bezier(.22, 1, .36, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .why-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--teal), transparent);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .why-card:hover {
+            border-color: var(--border2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+        }
+
+        .why-card:hover::before {
+            opacity: 1;
+        }
+
+        .why-num {
+            font-family: 'Sora', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: rgba(13, 148, 136, .18);
+            margin-bottom: .7rem;
+        }
+
+        .why-title {
+            font-family: 'Sora', sans-serif;
+            font-size: .95rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: .5rem;
+        }
+
+        .why-desc {
+            font-size: .82rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       CTA SECTION
+    ══════════════════════════════════════════════════════════════ */
+        .cta-section {
+            background: radial-gradient(ellipse 80% 70% at 50% 100%, rgba(13, 148, 136, .2) 0%, transparent 70%),
+                var(--bg);
+            padding: 120px 0;
+            text-align: center;
+        }
+
+        .cta-box {
+            max-width: 720px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, rgba(13, 148, 136, .08) 0%, rgba(15, 118, 110, .04) 100%);
+            border: 1px solid var(--border2);
+            border-radius: 28px;
+            padding: 72px 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(135deg, rgba(13, 148, 136, .3) 0%, transparent 40%, transparent 60%, rgba(20, 184, 166, .2) 100%);
+            border-radius: 28px;
+            z-index: -1;
+        }
+
+        .cta-box h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            font-size: 1rem;
+            color: var(--muted);
+            margin-bottom: 2.2rem;
+            line-height: 1.7;
+        }
+
+        .cta-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════════════════════════ */
+        .footer {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 60px 0 36px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr;
+            gap: 50px;
+            margin-bottom: 50px;
+        }
+
+        .footer-brand-name {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: .5rem;
+        }
+
+        .footer-brand-name span {
+            color: var(--teal-lt);
+        }
+
+        .footer-bio {
+            font-size: .85rem;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 280px;
+            margin-bottom: 1.4rem;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: .7rem;
+        }
+
+        .footer-social {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            transition: all .18s;
+        }
+
+        .footer-social:hover {
+            border-color: var(--teal);
+            color: var(--teal-lt);
+            background: var(--teal-sub);
+            transform: translateY(-2px);
+        }
+
+        .footer-social svg {
+            width: 15px;
+            height: 15px;
+            fill: currentColor;
+        }
+
+        .footer-col-title {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--muted);
+            margin-bottom: 1.1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+        }
+
+        .footer-link {
+            font-size: .875rem;
+            color: var(--muted);
+            transition: color .16s;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .footer-link:hover {
+            color: var(--teal-lt);
+        }
+
+        .footer-link-icon {
+            width: 14px;
+            height: 14px;
+            opacity: .5;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-copy {
+            font-size: .8rem;
+            color: var(--muted);
+        }
+
+        .footer-copy a {
+            color: var(--teal-lt);
+        }
+
+        .footer-made {
+            font-size: .8rem;
+            color: var(--muted);
+        }
+
+        .footer-made span {
+            color: var(--teal-lt);
+            font-weight: 600;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       ANIMATIONS
+    ══════════════════════════════════════════════════════════════ */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .anim-up {
+            animation: slideUp .7s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .anim-fade {
+            animation: fadeIn .6s ease both;
+        }
+
+        .delay-1 {
+            animation-delay: .1s
+        }
+
+        .delay-2 {
+            animation-delay: .2s
+        }
+
+        .delay-3 {
+            animation-delay: .3s
+        }
+
+        .delay-4 {
+            animation-delay: .4s
+        }
+
+        .delay-5 {
+            animation-delay: .5s
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 50px;
+                text-align: center;
+            }
+
+            .hero-sub {
+                max-width: 100%;
+            }
+
+            .hero-cta {
+                justify-content: center;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .hero-screen {
+                transform: none;
+            }
+
+            .hero-badge {
+                top: -10px;
+                right: 10px;
+            }
+
+            .hero-float {
+                bottom: -10px;
+                left: 0;
+            }
+
+            .feat-block {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .feat-block.reverse {
+                direction: ltr;
+            }
+
+            .finance-inner {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .cards-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .why-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            section {
+                padding: 70px 0;
+            }
+
+            .cards-3,
+            .cards-2,
+            .finance-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .why-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-box {
+                padding: 44px 28px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .hero-float {
+                display: none;
+            }
+
+            .nav-brand-name {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ════════════════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════════════ -->
+    <nav id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-brand">
+                <div class="nav-brand-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                </div>
+                <span class="nav-brand-name">Edu<span>Core</span></span>
+            </a>
+            <div class="nav-actions">
+                <a href="{% url 'accounts:login' %}"><button class="btn-nav-login">Login</button></a>
+                <a href="{% url 'accounts:register' %}"><button class="btn-nav-reg">Register →</button></a>
             </div>
-            <h2 class="mb-3" style="color: #1e293b; font-weight: 600;">Welcome to School Management System</h2>
-            <p class="text-muted mb-0">Select an option from the sidebar to begin.</p>
+        </div>
+    </nav>
+
+    <!-- ════════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════ -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-grid">
+                <!-- Left: copy -->
+                <div class="hero-copy">
+                    <div class="hero-eyebrow anim-up">
+                        <span class="tag-pill"><span class="tag-pill-dot"></span>Multi-Branch Architecture</span>
+                    </div>
+                    <h1 class="hero-title display anim-up delay-1">
+                        The Smarter Way<br />to Run <em class="grad">Your School</em>
+                    </h1>
+                    <p class="hero-sub anim-up delay-2">
+                        Manage students, staff, finance, attendance, exams, certificates and more — all in one powerful,
+                        scalable platform built for modern educational institutions.
+                    </p>
+                    <div class="hero-cta anim-up delay-3">
+                        <a href="{% url 'accounts:register' %}"><button class="btn btn-primary">Get Started
+                                →</button></a>
+                        <a href="{% url 'accounts:login' %}"><button class="btn btn-ghost">Sign In</button></a>
+                    </div>
+                    <div class="hero-stats anim-up delay-4">
+                        <div class="stat-item">
+                            <span class="stat-num">7+</span>
+                            <span class="stat-label">Role-Based Dashboards</span>
+                        </div>
+                        <div class="stat-sep"></div>
+                        <div class="stat-item">
+                            <span class="stat-num">∞</span>
+                            <span class="stat-label">Branches Supported</span>
+                        </div>
+                        <div class="stat-sep"></div>
+                        <div class="stat-item">
+                            <span class="stat-num">100%</span>
+                            <span class="stat-label">Data Isolated</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: dashboard screenshot -->
+                <div class="hero-visual anim-fade delay-3">
+                    <div class="hero-screen">
+                        <div class="hero-screen-bar">
+                            <div class="dot dot-r"></div>
+                            <div class="dot dot-y"></div>
+                            <div class="dot dot-g"></div>
+                        </div>
+                        <img src="{% static 'images/dashborad.png' %}" alt="EduCore Dashboard" />
+                    </div>
+                    <div class="hero-badge">✦ Live Dashboard</div>
+                    <div class="hero-float">
+                        <div class="hero-float-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <div class="hero-float-text">
+                            <span>Total Students</span>
+                            <strong>2,480 Enrolled</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+     TRUSTED STRIP
+════════════════════════════════════════════════════ -->
+    <div class="trusted-strip">
+        <div class="container">
+            <div class="trusted-inner">
+                <span class="trusted-label">Built for institutions</span>
+                <div class="trusted-divider"></div>
+                <div class="trusted-items">
+                    <span class="trusted-item">Primary Schools</span>
+                    <span class="trusted-item">Secondary Schools</span>
+                    <span class="trusted-item">Colleges</span>
+                    <span class="trusted-item">Academies</span>
+                    <span class="trusted-item">Multi-Campus Networks</span>
+                    <span class="trusted-item">Private Institutes</span>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <!-- ════════════════════════════════════════════════════
+     ACADEMIC MANAGEMENT — 3 cards
+════════════════════════════════════════════════════ -->
+    <section id="academics">
+        <div class="container">
+            <div class="feat-header">
+                <div class="section-label" style="justify-content:center">
+                    <div class="section-label-line"></div>
+                    <span class="section-label-text">Student & Academic Management</span>
+                    <div class="section-label-line"></div>
+                </div>
+                <h2 class="heading">Everything Academic, Unified</h2>
+                <p>From enrollment to graduation — manage every academic touchpoint with precision and ease.</p>
+            </div>
+            <div class="cards-3">
+                <div class="feat-card">
+                    <div class="feat-card-img">
+                        <img src="{% static 'images/students.png' %}" alt="Students Module" />
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-card-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <div class="feat-card-title">Student Enrollment</div>
+                        <div class="feat-card-desc">Streamlined enrollment with full profile management, guardian
+                            details, and academic history tracking across all branches.</div>
+                    </div>
+                </div>
+                <div class="feat-card">
+                    <div class="feat-card-img">
+                        <img src="{% static 'images/classes.png' %}" alt="Classes Module" />
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-card-icon">
+                            <svg viewBox="0 0 24 24">
+                                <rect x="3" y="3" width="7" height="7" />
+                                <rect x="14" y="3" width="7" height="7" />
+                                <rect x="14" y="14" width="7" height="7" />
+                                <rect x="3" y="14" width="7" height="7" />
+                            </svg>
+                        </div>
+                        <div class="feat-card-title">Classes & Sections</div>
+                        <div class="feat-card-desc">Organize students into classes and sections with flexible
+                            configuration per branch and per academic year.</div>
+                    </div>
+                </div>
+                <div class="feat-card">
+                    <div class="feat-card-img">
+                        <img src="{% static 'images/subjects.png' %}" alt="Subjects Module" />
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-card-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                            </svg>
+                        </div>
+                        <div class="feat-card-title">Subject Management</div>
+                        <div class="feat-card-desc">Assign subjects to classes, manage teacher allocations, and organize
+                            the full academic curriculum effortlessly.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════
+     STAFF SECTION — feat-block
+════════════════════════════════════════════════════ -->
+    <section id="staff">
+        <div class="container">
+            <div class="feat-block">
+                <div class="feat-content">
+                    <div class="section-label">
+                        <div class="section-label-line"></div>
+                        <span class="section-label-text">Staff & Role Management</span>
+                    </div>
+                    <h2 class="heading">Powerful Role-Based Access Control</h2>
+                    <p>Every user gets exactly the right view. Seven distinct role dashboards ensure principals see the
+                        big picture while teachers and parents see only what's relevant to them.</p>
+                    <ul class="feat-list">
+                        <li><span><strong>7 Role Dashboards:</strong> Principal, Manager, Accountant, Teacher, Student,
+                                Parent, Employee — all with dedicated interfaces.</span></li>
+                        <li><span><strong>Staff Attendance Tracking:</strong> Daily attendance marking with reporting
+                                and trend analysis for all staff members.</span></li>
+                        <li><span><strong>Department Organization:</strong> Organize staff into departments with clear
+                                reporting hierarchies across branches.</span></li>
+                        <li><span><strong>Permission Management:</strong> Granular access controls ensure data security
+                                and role-appropriate functionality.</span></li>
+                    </ul>
+                </div>
+                <div class="feat-visual">
+                    <div class="feat-img-wrap">
+                        <img src="{% static 'images/staff.png' %}" alt="Staff Management" />
+                    </div>
+                    <div class="feat-img-secondary">
+                        <img src="{% static 'images/staff_att.png' %}" alt="Staff Attendance" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════
+     MULTI-BRANCH SECTION — feat-block reverse
+════════════════════════════════════════════════════ -->
+    <section id="branches">
+        <div class="container">
+            <div class="feat-block reverse">
+                <div class="feat-content">
+                    <div class="section-label">
+                        <div class="section-label-line"></div>
+                        <span class="section-label-text">Multi-Branch Architecture</span>
+                    </div>
+                    <h2 class="heading">One Platform,<br /><span class="grad">Infinite Branches</span></h2>
+                    <p>Designed from the ground up for institutions with multiple locations. Each branch operates as an
+                        isolated tenant with its own data, configuration, and staff — all managed from a single unified
+                        platform.</p>
+                    <ul class="feat-list">
+                        <li><span><strong>Tenant Isolation:</strong> Complete data separation between branches — no
+                                cross-contamination, ever.</span></li>
+                        <li><span><strong>Branch Configuration:</strong> Each branch has independent settings, fee
+                                structures, and academic calendars.</span></li>
+                        <li><span><strong>Unified Dashboard:</strong> Central oversight allows administrators to monitor
+                                all branches simultaneously.</span></li>
+                        <li><span><strong>Scalable Design:</strong> Add new branches instantly without any architectural
+                                changes or downtime.</span></li>
+                    </ul>
+                </div>
+                <div class="feat-visual">
+                    <div class="feat-img-wrap">
+                        <img src="{% static 'images/branches.png' %}" alt="Branch Management" />
+                    </div>
+                    <div class="feat-img-secondary" style="right:auto;left:-24px;">
+                        <img src="{% static 'images/school_info.png' %}" alt="School Configuration" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════
+     FINANCE SECTION
+════════════════════════════════════════════════════ -->
+    <section class="finance-section" id="finance">
+        <div class="container">
+            <div class="finance-inner">
+                <div>
+                    <div class="section-label">
+                        <div class="section-label-line"></div>
+                        <span class="section-label-text">Finance & Fee Management</span>
+                    </div>
+                    <h2 class="heading" style="font-size:clamp(1.8rem,3vw,2.5rem);color:#fff;margin-bottom:1rem;">
+                        Complete Financial<br />Control in One Place</h2>
+                    <p style="color:var(--muted);line-height:1.75;margin-bottom:2rem;font-size:.95rem;">From fee
+                        collection to expense tracking, EduCore provides comprehensive financial tools that keep your
+                        institution's finances transparent, organized, and insightful.</p>
+                    <div class="finance-cards">
+                        <div class="finance-mini-card">
+                            <div class="fmc-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <line x1="12" y1="1" x2="12" y2="23" />
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                </svg>
+                            </div>
+                            <div class="fmc-title">Fee Structures</div>
+                            <div class="fmc-desc">Flexible fee templates per class, section, or branch with installment
+                                support.</div>
+                        </div>
+                        <div class="finance-mini-card">
+                            <div class="fmc-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                                    <polyline points="17 6 23 6 23 12" />
+                                </svg>
+                            </div>
+                            <div class="fmc-title">Payment Tracking</div>
+                            <div class="fmc-desc">Real-time payment status with automated receipts and pending dues
+                                alerts.</div>
+                        </div>
+                        <div class="finance-mini-card">
+                            <div class="fmc-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="12" cy="8" r="7" />
+                                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                                </svg>
+                            </div>
+                            <div class="fmc-title">Scholarships</div>
+                            <div class="fmc-desc">Manage scholarship allocations with automatic deductions from fee
+                                totals.</div>
+                        </div>
+                        <div class="finance-mini-card">
+                            <div class="fmc-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                                    <line x1="1" y1="10" x2="23" y2="10" />
+                                </svg>
+                            </div>
+                            <div class="fmc-title">Expense Management</div>
+                            <div class="fmc-desc">Track institutional expenses with categorization and reporting
+                                dashboards.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="finance-big-img">
+                    <img src="{% static 'images/finance_dashboard.png' %}" alt="Finance Dashboard" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════
+     CERTIFICATES SECTION
+════════════════════════════════════════════════════ -->
+    <section id="certificates">
+        <div class="container">
+            <div class="feat-block">
+                <div class="feat-content">
+                    <div class="section-label">
+                        <div class="section-label-line"></div>
+                        <span class="section-label-text">Certificates & Automation</span>
+                    </div>
+                    <h2 class="heading">Automated Certificate<br />Generation at Scale</h2>
+                    <p>Stop manual certificate creation. EduCore's template-based system generates professional
+                        certificates in seconds, complete with serial tracking and instant PDF export.</p>
+                    <ul class="feat-list">
+                        <li><span><strong>Template System:</strong> Design reusable certificate templates with custom
+                                fields and institutional branding.</span></li>
+                        <li><span><strong>Serial Number Tracking:</strong> Every certificate gets a unique, verifiable
+                                serial number for authenticity.</span></li>
+                        <li><span><strong>Bulk Generation:</strong> Issue certificates to entire classes or batches with
+                                a single action.</span></li>
+                        <li><span><strong>PDF Export:</strong> Download print-ready PDFs instantly, formatted to
+                                professional standards.</span></li>
+                    </ul>
+                </div>
+                <div class="feat-visual">
+                    <div class="feat-img-wrap">
+                        <img src="{% static 'images/certificate.png' %}" alt="Certificate Generation" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════
+     NOTIFICATIONS + LOGS — 2 cards
+════════════════════════════════════════════════════ -->
+    <section id="notifications">
+        <div class="container">
+            <div class="feat-header">
+                <div class="section-label" style="justify-content:center">
+                    <div class="section-label-line"></div>
+                    <span class="section-label-text">Notifications & Activity Logs</span>
+                    <div class="section-label-line"></div>
+                </div>
+                <h2 class="heading">Stay Informed. Stay Secure.</h2>
+                <p>Comprehensive communication tools and full audit trails keep your institution transparent and staff
+                    accountable at every level.</p>
+            </div>
+            <div class="cards-2">
+                <div class="feat-card">
+                    <div class="feat-card-img" style="height:240px;">
+                        <img src="{% static 'images/notification.png' %}" alt="Notifications" />
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-card-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                            </svg>
+                        </div>
+                        <div class="feat-card-title">Announcements & Notifications</div>
+                        <div class="feat-card-desc">Send targeted announcements to specific roles, classes, or branches.
+                            Event reminders, exam schedules, and urgent alerts delivered instantly to the right people.
+                        </div>
+                    </div>
+                </div>
+                <div class="feat-card">
+                    <div class="feat-card-img" style="height:240px;">
+                        <img src="{% static 'images/activity_logs.png' %}" alt="Activity Logs" />
+                    </div>
+                    <div class="feat-card-body">
+                        <div class="feat-card-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                        </div>
+                        <div class="feat-card-title">System Activity Logs</div>
+                        <div class="feat-card-desc">Full audit trail of every user action — logins, data changes, report
+                            exports. Maintain institutional accountability with tamper-evident activity records.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════
+     WHY SECTION
+════════════════════════════════════════════════════ -->
+    <section class="why-section" id="why">
+        <div class="container">
+            <div class="feat-header">
+                <div class="section-label" style="justify-content:center">
+                    <div class="section-label-line"></div>
+                    <span class="section-label-text">Why EduCore</span>
+                    <div class="section-label-line"></div>
+                </div>
+                <h2 class="heading">Built Different, Built Better</h2>
+                <p>We didn't bolt on multi-branch support as an afterthought. EduCore was engineered from day one around
+                    the real operational needs of institutional education.</p>
+            </div>
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-num">01</div>
+                    <div class="why-title">Fully Dynamic Architecture</div>
+                    <div class="why-desc">No hardcoded data. Every setting — from fee structures to class configurations
+                        — is dynamic and customizable per branch.</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-num">02</div>
+                    <div class="why-title">Multi-Branch by Design</div>
+                    <div class="why-desc">True multi-tenant isolation with shared infrastructure. Each branch is a
+                        self-contained unit with its own data boundary.</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-num">03</div>
+                    <div class="why-title">Secure Role-Based Access</div>
+                    <div class="why-desc">Seven distinct access levels ensure every stakeholder sees exactly what they
+                        need — nothing more, nothing less.</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-num">04</div>
+                    <div class="why-title">Optimized Database Design</div>
+                    <div class="why-desc">Carefully normalized schema with strategic indexing delivers fast queries even
+                        at large institutional data volumes.</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-num">05</div>
+                    <div class="why-title">Scalable From Day One</div>
+                    <div class="why-desc">Add branches, students, and staff without degradation. The architecture grows
+                        with your institution gracefully.</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-num">06</div>
+                    <div class="why-title">Clean, Intuitive UI</div>
+                    <div class="why-desc">A thoughtfully designed interface that staff members adopt quickly — reducing
+                        training time and administrative overhead.</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-num">07</div>
+                    <div class="why-title">Performance-Focused Backend</div>
+                    <div class="why-desc">Django-powered backend with optimized ORM queries, minimal N+1 issues, and
+                        efficient data aggregation at the server level.</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-num">08</div>
+                    <div class="why-title">Real Institutional Workflow</div>
+                    <div class="why-desc">Built by studying actual school operations — not abstract software patterns.
+                        Every feature maps to a real administrative need.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+     CTA SECTION
+════════════════════════════════════════════════════ -->
+    <section class="cta-section" id="cta">
+        <div class="container">
+            <div class="cta-box">
+                <div class="section-label" style="justify-content:center;margin-bottom:1.2rem;">
+                    <div class="section-label-line"></div>
+                    <span class="section-label-text">Get Started Today</span>
+                    <div class="section-label-line"></div>
+                </div>
+                <h2 class="display">Start Managing Your Institution Smarter Today</h2>
+                <p>Join forward-thinking educational institutions that have moved to a unified, scalable management
+                    platform. Setup takes minutes.</p>
+                <div class="cta-actions">
+                    <a href="{% url 'accounts:register' %}"><button class="btn btn-primary"
+                            style="font-size:1rem;padding:.85rem 2rem;">Create Your Account →</button></a>
+                    <a href="{% url 'accounts:login' %}"><button class="btn btn-ghost"
+                            style="font-size:1rem;padding:.85rem 2rem;">Sign In</button></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <!-- Brand col -->
+                <div>
+                    <div class="footer-brand-name">Edu<span>Core</span></div>
+                    <p class="footer-bio">A premium, fully dynamic multi-branch School Management System built with
+                        Django. Designed for institutions that demand reliability, scalability, and a beautiful user
+                        experience.</p>
+                    <div class="footer-socials">
+                        <a href="https://github.com/Uzair-Waseem-390" target="_blank" rel="noopener"
+                            class="footer-social" aria-label="GitHub">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                            </svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/uzair-waseem-digital/" target="_blank" rel="noopener"
+                            class="footer-social" aria-label="LinkedIn">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                            </svg>
+                        </a>
+                        <a href="mailto:uzairwaseem390@gmail.com" class="footer-social" aria-label="Email">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick links -->
+                <div>
+                    <div class="footer-col-title">Quick Links</div>
+                    <div class="footer-links">
+                        <a href="{% url 'accounts:login' %}" class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                            Login to Dashboard
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                            Create an Account
+                        </a>
+                        <a href="#academics" class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                            Academic Management
+                        </a>
+                        <a href="#branches" class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                            Multi-Branch System
+                        </a>
+                        <a href="#finance" class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                            Finance Module
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div>
+                    <div class="footer-col-title">Developer</div>
+                    <div class="footer-links">
+                        <a href="mailto:uzairwaseem390@gmail.com" class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                            </svg>
+                            uzairwaseem390@gmail.com
+                        </a>
+                        <a href="tel:0328152502" class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                            </svg>
+                            0328 152 502
+                        </a>
+                        <a href="https://github.com/Uzair-Waseem-390" target="_blank" rel="noopener"
+                            class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                            </svg>
+                            github.com/Uzair-Waseem-390
+                        </a>
+                        <a href="https://www.linkedin.com/in/uzair-waseem-digital/" target="_blank" rel="noopener"
+                            class="footer-link">
+                            <svg class="footer-link-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                            </svg>
+                            linkedin.com/in/uzair-waseem-digital
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-copy">
+                    © 2025 EduCore School Management System. Built with Django.
+                </div>
+                <div class="footer-made">
+                    Crafted by <span>Uzair Waseem</span> — Full Stack Software Developer
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ════════════════════════════════════════════════════
+     JS
+════════════════════════════════════════════════════ -->
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 30);
+        }, { passive: true });
+
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+
+        document.querySelectorAll('.feat-card, .why-card, .finance-mini-card, .feat-block, .finance-inner').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            observer.observe(el);
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,55 +1,60 @@
 <div class="col-sm-6 col-lg-3">
-    <div class="card dashboard-card h-100">
-        <div class="card-body d-flex align-items-center">
-            <div class="kpi-icon bg-light text-primary me-3">
+    <div class="kpi-card" style="animation-delay:{{ forloop.counter0 }}00ms;">
+        <div class="kpi-top">
+            <p class="kpi-label">{{ label|title }}</p>
+            <div class="kpi-icon">
                 {% if "student" in label %}
-                <i class="bi bi-people"></i>
+                <i class="bi bi-people-fill"></i>
                 {% elif "teacher" in label %}
-                <i class="bi bi-person-badge"></i>
+                <i class="bi bi-person-badge-fill"></i>
                 {% elif "staff" in label %}
-                <i class="bi bi-person-badge"></i>
+                <i class="bi bi-person-badge-fill"></i>
                 {% elif "fee" in label %}
-                <i class="bi bi-currency-dollar"></i>
+                <i class="bi bi-currency-exchange"></i>
                 {% elif "salary" in label %}
-                <i class="bi bi-currency-dollar"></i>
+                <i class="bi bi-wallet2"></i>
                 {% elif "income" in label %}
-                <i class="bi bi-currency-dollar"></i>
+                <i class="bi bi-graph-up-arrow"></i>
                 {% elif "expense" in label %}
-                <i class="bi bi-currency-dollar"></i>
+                <i class="bi bi-graph-down-arrow"></i>
+                {% elif "collection" in label %}
+                <i class="bi bi-cash-stack"></i>
+                {% elif "dues" in label %}
+                <i class="bi bi-exclamation-circle-fill"></i>
+                {% elif "balance" in label %}
+                <i class="bi bi-bank"></i>
                 {% elif "attendance" in label %}
-                <i class="bi bi-calendar-check"></i>
+                <i class="bi bi-calendar-check-fill"></i>
                 {% elif "class" in label %}
-                <i class="bi bi-book"></i>
+                <i class="bi bi-journal-bookmark-fill"></i>
+                {% elif "pct" in label or "percent" in label %}
+                <i class="bi bi-percent"></i>
                 {% else %}
-                <i class="bi bi-bar-chart"></i>
+                <i class="bi bi-bar-chart-fill"></i>
                 {% endif %}
             </div>
-            <div>
-                <h6 class="text-muted small text-uppercase mb-1">{{ label|title }}</h6>
-                <h3 class="fw-bold mb-0">
-                    {% if "fee" in label %}
-                    PKR {{ value|floatformat:0 }}
-                    {% elif "salary" in label %}
-                    PKR {{ value|floatformat:0 }}
-                    {% elif "income" in label %}
-                    PKR {{ value|floatformat:0 }}
-                    {% elif "expense" in label %}
-                    PKR {{ value|floatformat:0 }}
-                    {% elif "collection" in label %}
-                    PKR {{ value|floatformat:0 }}
-                    {% elif "dues" in label %}
-                    PKR {{ value|floatformat:0 }}
-                    {% elif "balance" in label %}
-                    PKR {{ value|floatformat:0 }}
-                    {% elif "pct" in label %}
-                    {{ value }}%
-                    {% elif "percent" in label %}
-                    {{ value }}%
-                    {% else %}
-                    {{ value }}
-                    {% endif %}
-                </h3>
-            </div>
         </div>
+        <p
+            class="kpi-value{% if 'fee' in label or 'salary' in label or 'income' in label or 'expense' in label or 'collection' in label or 'dues' in label or 'balance' in label %} is-currency{% endif %}">
+            {% if 'fee' in label %}
+            PKR {{ value|floatformat:0 }}
+            {% elif 'salary' in label %}
+            PKR {{ value|floatformat:0 }}
+            {% elif 'income' in label %}
+            PKR {{ value|floatformat:0 }}
+            {% elif 'expense' in label %}
+            PKR {{ value|floatformat:0 }}
+            {% elif 'collection' in label %}
+            PKR {{ value|floatformat:0 }}
+            {% elif 'dues' in label %}
+            PKR {{ value|floatformat:0 }}
+            {% elif 'balance' in label %}
+            PKR {{ value|floatformat:0 }}
+            {% elif 'pct' in label or 'percent' in label %}
+            {{ value }}<span style="font-size:0.8em;opacity:0.55;font-weight:600;">%</span>
+            {% else %}
+            {{ value }}
+            {% endif %}
+        </p>
     </div>
 </div>

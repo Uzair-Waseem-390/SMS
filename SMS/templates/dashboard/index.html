@@ -5,31 +5,261 @@
 
 {% block extra_css %}
 <style>
-    .dashboard-card {
-        transition: transform 0.2s;
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    /* ═══════════════════════════════════════════════
+       DASHBOARD — Premium Professional
+       ═══════════════════════════════════════════════ */
+
+    /* ── Page Header ── */
+    .dash-eyebrow {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--sms-primary);
+        margin-bottom: 0.2rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
-    .dashboard-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    .dash-eyebrow::before {
+        content: '';
+        display: inline-block;
+        width: 14px;
+        height: 2px;
+        background: var(--sms-primary);
+        border-radius: 99px;
+    }
+
+    .dash-page-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 1.55rem;
+        color: var(--sms-neutral-dark);
+        letter-spacing: -0.04em;
+        margin: 0;
+        line-height: 1.15;
+    }
+
+    .dash-page-subtitle {
+        font-size: 0.85rem;
+        color: var(--sms-neutral);
+        margin: 0.25rem 0 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .dash-date-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff;
+        border: 1px solid var(--sms-border);
+        border-radius: 99px;
+        padding: 0.42rem 1rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 600;
+        font-size: 0.78rem;
+        color: var(--sms-neutral-dark);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        white-space: nowrap;
+        align-self: center;
+    }
+
+    .dash-date-pill i {
+        color: var(--sms-primary);
+    }
+
+    /* ── Branch Switcher ── */
+    .branch-switcher-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--sms-neutral-light);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .branch-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.33rem 0.82rem;
+        border-radius: 7px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        border: 1px solid var(--sms-border);
+        background: #fff;
+        color: var(--sms-neutral);
+        text-decoration: none;
+        transition: border-color 0.14s, color 0.14s, background 0.14s;
+        line-height: 1;
+    }
+
+    .branch-btn:hover {
+        border-color: var(--sms-primary);
+        color: var(--sms-primary);
+        background: var(--sms-primary-subtle);
+    }
+
+    .branch-btn.branch-active {
+        background: var(--sms-primary);
+        border-color: var(--sms-primary);
+        color: #fff;
+        box-shadow: 0 2px 8px var(--sms-primary-shadow);
+    }
+
+    /* ── Section divider label ── */
+    .dash-section-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--sms-neutral-light);
+        margin-bottom: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dash-section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--sms-border);
+    }
+
+    /* ── KPI Cards ── */
+    .kpi-card {
+        background: #fff;
+        border: 1px solid var(--sms-border) !important;
+        border-radius: 12px;
+        padding: 1.2rem 1.3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+        transition: box-shadow 0.18s, border-color 0.18s;
+        opacity: 0;
+        animation: kpiIn 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 1.3rem;
+        right: 1.3rem;
+        height: 2px;
+        background: linear-gradient(90deg, var(--sms-primary), var(--sms-primary-light));
+        border-radius: 0 0 2px 2px;
+        opacity: 0;
+        transition: opacity 0.18s;
+    }
+
+    .kpi-card:hover {
+        box-shadow: 0 4px 16px rgba(13, 148, 136, 0.1) !important;
+        border-color: rgba(13, 148, 136, 0.25) !important;
+    }
+
+    .kpi-card:hover::before {
+        opacity: 1;
+    }
+
+    @keyframes kpiIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .kpi-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .kpi-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.69rem;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--sms-neutral-light);
+        margin: 0;
     }
 
     .kpi-icon {
-        width: 48px;
-        height: 48px;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 10px;
+        background: var(--sms-primary-subtle);
+        color: var(--sms-primary);
+        font-size: 0.95rem;
+        flex-shrink: 0;
+        border: 1px solid rgba(13, 148, 136, 0.12);
+    }
+
+    .kpi-value {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
         font-size: 1.5rem;
+        letter-spacing: -0.04em;
+        color: var(--sms-neutral-dark);
+        line-height: 1;
+        margin: 0;
+    }
+
+    .kpi-value.is-currency {
+        font-size: 1.15rem;
+    }
+
+    /* ── Chart Cards ── */
+    .dash-chart-card {
+        background: #fff;
+        border: 1px solid var(--sms-border);
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .dash-chart-card .card-header {
+        border-bottom: 1px solid var(--sms-border);
+        padding: 1rem 1.3rem 0.85rem;
+        background: transparent;
+        display: flex;
+        align-items: center;
+    }
+
+    .dash-card-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: var(--sms-neutral-dark);
+        margin: 0;
+        letter-spacing: -0.01em;
     }
 
     .chart-container {
         position: relative;
-        height: 300px;
+        height: 260px;
         width: 100%;
     }
 
@@ -38,106 +268,413 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 300px;
-        color: #adb5bd;
+        height: 260px;
+        gap: 0.65rem;
+        color: var(--sms-neutral-light);
     }
 
-    .empty-chart i {
-        font-size: 3rem;
-        margin-bottom: 0.5rem;
+    .empty-chart-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 11px;
+        background: var(--sms-primary-subtle);
+        border: 1px solid rgba(13, 148, 136, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: var(--sms-primary);
+        opacity: 0.55;
     }
 
-    /* Branch Switcher Pills */
-    .branch-switcher .btn {
-        font-size: 0.8rem;
+    .empty-chart span {
+        font-size: 0.82rem;
         font-weight: 500;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ── Enhanced Professional Tables ── */
+    .dash-table-card {
+        background: #ffffff;
+        border: 1px solid #eef2f6;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .dash-table-card:hover {
+        box-shadow: 0 8px 24px rgba(13, 148, 136, 0.08), 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .dash-table-card .card-header {
+        border-bottom: 1px solid #f0f4f8;
+        padding: 1.1rem 1.5rem 0.9rem;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dash-card-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #1e293b;
+        margin: 0;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dash-card-title::before {
+        content: '';
+        width: 3px;
+        height: 16px;
+        background: var(--sms-primary);
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .view-all-link {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--sms-primary);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.4rem 0.8rem;
+        background: rgba(13, 148, 136, 0.04);
+        border-radius: 30px;
+        transition: all 0.2s ease;
+    }
+
+    .view-all-link:hover {
+        background: rgba(13, 148, 136, 0.1);
+        color: var(--sms-primary);
+        opacity: 1;
+    }
+
+    .view-all-link i {
+        font-size: 0.7rem;
+        transition: transform 0.2s ease;
+    }
+
+    .view-all-link:hover i {
+        transform: translateX(3px);
+    }
+
+    .dash-table-card .table {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.85rem;
+        margin: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .dash-table-card .table thead th {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #64748b;
+        background: #f9fbfd;
+        border-bottom: 1px solid #e9eef2 !important;
+        padding: 0.9rem 1.5rem;
+        white-space: nowrap;
+        font-feature-settings: "tnum";
+    }
+
+    .dash-table-card .table tbody td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f0f4f8;
+        vertical-align: middle;
+        color: #334155;
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .dash-table-card .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .dash-table-card .table tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+    .dash-table-card .table tbody tr:hover td {
+        background-color: #f8fbfe;
+    }
+
+    /* Enhanced student avatar */
+    .student-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: linear-gradient(145deg, #f0f9f8, #e6f3f1);
+        color: var(--sms-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+        border: 1px solid rgba(13, 148, 136, 0.15);
+        box-shadow: 0 2px 4px rgba(13, 148, 136, 0.05);
+    }
+
+    /* Enhanced status badges */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 0.3rem 0.9rem;
+        border-radius: 30px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .status-pill.paid {
+        background: linear-gradient(145deg, #e6f7e6, #dcf5dc);
+        color: #1e7b4a;
+        border: 1px solid rgba(30, 123, 74, 0.15);
+        box-shadow: 0 2px 4px rgba(30, 123, 74, 0.05);
+    }
+
+    .status-pill.unpaid {
+        background: linear-gradient(145deg, #fff0f0, #ffe8e8);
+        color: #b91c1c;
+        border: 1px solid rgba(185, 28, 28, 0.15);
+        box-shadow: 0 2px 4px rgba(185, 28, 28, 0.05);
+    }
+
+    .status-pill.pending {
+        background: linear-gradient(145deg, #fff4e0, #ffeed5);
+        color: #b45b0f;
+        border: 1px solid rgba(180, 91, 15, 0.15);
+        box-shadow: 0 2px 4px rgba(180, 91, 15, 0.05);
+    }
+
+    /* Amount styling */
+    .amount-positive {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #1e293b;
+        letter-spacing: -0.01em;
+    }
+
+    .amount-negative {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #b91c1c;
+        letter-spacing: -0.01em;
+    }
+
+    /* Notice list enhanced */
+    .notice-item {
+        padding: 1.1rem 1.5rem;
+        border-bottom: 1px solid #f0f4f8;
+        transition: background-color 0.15s ease;
+    }
+
+    .notice-item:hover {
+        background-color: #f8fbfe;
+    }
+
+    .notice-item:last-child {
+        border-bottom: none;
+    }
+
+    .notice-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 650;
+        font-size: 0.9rem;
+        color: #1e293b;
+        margin: 0 0 0.3rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .notice-date {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        flex-shrink: 0;
+        background: #f1f5f9;
+        padding: 0.2rem 0.8rem;
+        border-radius: 30px;
+        font-weight: 500;
+    }
+
+    .notice-body {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* Empty state styling */
+    .empty-state {
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        background: #fafcfd;
+        border-radius: 12px;
+        margin: 1rem;
+    }
+
+    .empty-state i {
+        font-size: 2rem;
+        color: #cbd5e1;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    /* Table cell enhancements */
+    .student-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .student-details {
+        line-height: 1.4;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.85rem;
+    }
+
+    .student-meta {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Date styling */
+    .date-cell {
+        color: #64748b;
+        font-size: 0.8rem;
+        font-feature-settings: "tnum";
+        white-space: nowrap;
+        background: #f8fafc;
+        padding: 0.25rem 0.8rem;
+        border-radius: 30px;
+        display: inline-block;
+    }
+
+    /* Custom icon colors */
+    .bi {
+        vertical-align: middle;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid py-3">
+
+    <!-- ── Page Header ── -->
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
         <div>
-            <h2 class="mb-1">{{ greeting }}, {{ request.user.get_short_name }}!</h2>
-            <p class="text-muted mb-0">
+            <div class="dash-eyebrow">Overview</div>
+            <h1 class="dash-page-title">Dashboard</h1>
+            <p class="dash-page-subtitle">
+                <i class="bi bi-building" style="color:var(--sms-primary-light);font-size:0.8rem;"></i>
                 {% if selected_branch_id != 'all' and branch %}
                 {{ branch.name }}
                 {% else %}
                 {{ school.name }} — All Branches
                 {% endif %}
-                | {{ role|title }} Dashboard
+                <span style="color:var(--sms-border);">·</span>
+                {{ role|title }}
             </p>
         </div>
-        <div>
-            <span class="badge bg-primary rounded-pill px-3 py-2">
-                {{ today|date:"l, F j, Y" }}
-            </span>
-        </div>
+        <span class="dash-date-pill">
+            <i class="bi bi-calendar3"></i>{{ today|date:"F j, Y" }}
+        </span>
     </div>
 
-    <!-- Branch Switcher (Principal Only) -->
+    <!-- ── Branch Switcher ── -->
     {% if role == 'principal' and all_branches %}
-    <div class="d-flex align-items-center gap-2 mb-4 flex-wrap branch-switcher">
-        <span class="text-muted small fw-semibold me-1"><i class="bi bi-diagram-3 me-1"></i>View:</span>
-        <a href="?branch=all"
-            class="btn btn-sm {% if selected_branch_id == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
-            <i class="bi bi-grid me-1"></i> All Branches
+    <div class="d-flex align-items-center gap-2 mb-4 flex-wrap">
+        <span class="branch-switcher-label"><i class="bi bi-diagram-3 me-1"></i>Branch</span>
+        <a href="?branch=all" class="branch-btn {% if selected_branch_id == 'all' %}branch-active{% endif %}">
+            <i class="bi bi-grid-3x2-gap"></i> All
         </a>
         {% for b in all_branches %}
-        <a href="?branch={{ b.id }}"
-            class="btn btn-sm {% if selected_branch_id == b.id %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
-            {% if b.is_main_branch %}<i class="bi bi-star-fill me-1 text-warning"></i>{% endif %}
+        <a href="?branch={{ b.id }}" class="branch-btn {% if selected_branch_id == b.id %}branch-active{% endif %}">
+            {% if b.is_main_branch %}
+            <i class="bi bi-star-fill"
+                style="font-size:0.65rem;{% if selected_branch_id == b.id %}color:rgba(255,255,255,0.8);{% else %}color:#f59e0b;{% endif %}"></i>
+            {% endif %}
             {{ b.name }}
         </a>
         {% endfor %}
     </div>
     {% endif %}
 
-    <!-- Alerts Section -->
+    <!-- ── Alerts ── -->
     {% if alerts %}
-    <div class="row mb-4">
-        <div class="col-12">
-            {% for alert in alerts %}
-            <div class="alert alert-{{ alert.type|default:'info' }} alert-dismissible fade show" role="alert">
-                {% if alert.type == 'danger' %}<i class="bi bi-exclamation-octagon-fill me-2"></i>
-                {% elif alert.type == 'warning' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
-                {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
-
-                {{ alert.message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
+    <div class="mb-4">
+        {% for alert in alerts %}
+        <div class="alert alert-{{ alert.type|default:'info' }} alert-dismissible fade show mb-2" role="alert">
+            {% if alert.type == 'danger' %}<i class="bi bi-exclamation-octagon-fill me-2"></i>
+            {% elif alert.type == 'warning' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
+            {{ alert.message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        {% endfor %}
     </div>
     {% endif %}
 
-    <!-- KPI Cards -->
-    <div class="row g-4 mb-4">
+    <!-- ── KPI Row ── -->
+    {% if kpis %}
+    <div class="dash-section-label">Key Metrics</div>
+    <div class="row g-3 mb-4">
         {% for key, value in kpis.items %}
         {% include "dashboard/partials/kpi.html" with label=key value=value %}
         {% endfor %}
     </div>
+    {% endif %}
 
-    <!-- Charts Section -->
+    <!-- ── Charts ── -->
     {% if charts %}
-    <div class="row g-4 mb-4">
+    <div class="dash-section-label">Analytics</div>
+    <div class="row g-3 mb-4">
         {% for key, chart_data in charts.items %}
-        <div class="col-md-6 col-lg-6">
-            <div class="card h-100 border-0 shadow-sm rounded-4">
-                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-                    <h5 class="card-title fw-bold text-capitalize">{{ key|cut:"_"|title }}</h5>
+        <div class="col-md-6">
+            <div class="dash-chart-card">
+                <div class="card-header">
+                    <h5 class="dash-card-title">{{ key|cut:"_"|title }}</h5>
                 </div>
-                <div class="card-body px-4 pb-4">
+                <div class="card-body p-3">
                     {% if chart_data.labels %}
                     <div class="chart-container">
                         <canvas id="chart-{{ key }}"></canvas>
                     </div>
                     {% else %}
                     <div class="empty-chart">
-                        <i class="bi bi-bar-chart-line"></i>
-                        <span>No data available yet</span>
+                        <div class="empty-chart-icon"><i class="bi bi-bar-chart-line"></i></div>
+                        <span>No data available</span>
                     </div>
                     {% endif %}
                 </div>
@@ -147,129 +684,160 @@
     </div>
     {% endif %}
 
-    <!-- Tables/Sections -->
+    <!-- ── Tables ── -->
     {% if tables %}
-    <div class="row g-4">
+    <div class="dash-section-label">Recent Activity</div>
+    <div class="row g-3">
         {% for key, data in tables.items %}
         <div class="col-lg-6">
-            <div class="card h-100 border-0 shadow-sm rounded-4">
-                <div
-                    class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                    <h5 class="card-title fw-bold text-capitalize">{{ key|cut:"_"|title }}</h5>
-                    <a href="#" class="text-decoration-none small">View All</a>
+            <div class="dash-table-card">
+                <div class="card-header">
+                    <h5 class="dash-card-title">{{ key|cut:"_"|title }}</h5>
+                    <a href="#" class="view-all-link">View all <i class="bi bi-arrow-right"></i></a>
                 </div>
-                <div class="card-body px-0">
-                    <div class="table-responsive px-4">
-                        {% include "dashboard/partials/table_renderer.html" with table_key=key table_data=data %}
-                    </div>
+                <div class="card-body p-0">
+                    {% include "dashboard/partials/table_renderer.html" with table_key=key table_data=data %}
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
     {% endif %}
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{# Chart data lives in a hidden div — zero chance of Django parser confusion #}
+{% if charts %}
+<div id="sms-chart-data" aria-hidden="true" style="display:none;" data-charts='{
+        {% for key, chart_data in charts.items %}"{{ key }}":{"labels":{{ chart_data.labels|default:"[]"|safe }},"data":{{ chart_data.data|default:"[]"|safe }},"income":{{ chart_data.income|default:"[]"|safe }},"expense":{{ chart_data.expense|default:"[]"|safe }}}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    }'></div>
+{% endif %}
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Chart colour palette
-        var COLORS = [
-            'rgba(54, 162, 235, 0.7)',
-            'rgba(255, 99, 132, 0.7)',
-            'rgba(255, 206, 86, 0.7)',
-            'rgba(75, 192, 192, 0.7)',
-            'rgba(153, 102, 255, 0.7)',
-            'rgba(255, 159, 64, 0.7)'
+
+        var el = document.getElementById('sms-chart-data');
+        if (!el) return;
+
+        var allCharts = {};
+        try { allCharts = JSON.parse(el.getAttribute('data-charts')); }
+        catch (e) { console.warn('Chart JSON parse error:', e); return; }
+
+        /* ── Palette ── */
+        var BG = [
+            'rgba(13,148,136,0.78)', 'rgba(20,184,166,0.73)',
+            'rgba(15,118,110,0.78)', 'rgba(94,234,212,0.6)',
+            'rgba(30,41,59,0.62)', 'rgba(100,116,139,0.55)'
         ];
-        var BORDERS = [
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 99, 132, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
+        var BD = [
+            'rgb(13,148,136)', 'rgb(20,184,166)', 'rgb(15,118,110)',
+            'rgb(94,234,212)', 'rgb(30,41,59)', 'rgb(100,116,139)'
         ];
 
-        {% for key, chart_data in charts.items %}
-        {% if chart_data.labels %}
-        (function () {
-            var canvas = document.getElementById('chart-{{ key }}');
-            if (!canvas) return;
-            var ctx = canvas.getContext('2d');
+        Chart.defaults.font.family = "'DM Sans', system-ui, sans-serif";
+        Chart.defaults.color = '#94a3b8';
 
-            var chartType = 'bar';
-            {% if "trend" in key %}
-            chartType = 'line';
-            {% elif "status" in key or "breakdown" in key %}
-            chartType = 'doughnut';
-            {% endif %}
+        /* ── Shared options ── */
+        function opts(type) {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 420, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: {
+                        position: type === 'doughnut' ? 'right' : 'bottom',
+                        labels: {
+                            font: { family: "'Plus Jakarta Sans', sans-serif", weight: '600', size: 11 },
+                            color: '#64748b',
+                            boxWidth: 10, boxHeight: 10, borderRadius: 3,
+                            usePointStyle: type !== 'doughnut',
+                        },
+                    },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: '700', size: 12 },
+                        bodyFont: { family: "'DM Sans', sans-serif", size: 12 },
+                        padding: 10, cornerRadius: 8, displayColors: true,
+                        boxWidth: 8, boxHeight: 8,
+                    },
+                },
+                scales: type !== 'doughnut' ? {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(226,232,240,0.8)', drawBorder: false },
+                        border: { display: false },
+                        ticks: { font: { family: "'DM Sans', sans-serif", size: 11 }, color: '#94a3b8', padding: 6 },
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false },
+                        ticks: { font: { family: "'DM Sans', sans-serif", size: 11 }, color: '#94a3b8' },
+                    },
+                } : {},
+            };
+        }
 
-            var datasets = [];
+        /* ── Render each chart — pure JS branching, zero Django tags ── */
+        Object.keys(allCharts).forEach(function (key) {
+            var d = allCharts[key];
+            var canvas = document.getElementById('chart-' + key);
+            if (!canvas || !d.labels || !d.labels.length) return;
 
-            {% if chart_data.income %}
-            datasets.push({
-                label: 'Income',
-                data: {{ chart_data.income | safe }},
-            borderColor: '#2ecc71',
-                backgroundColor: 'rgba(46, 204, 113, 0.15)',
-                    tension: 0.4,
-                        fill: true,
-                            pointRadius: 4,
-                                pointHoverRadius: 6
-    });
-    datasets.push({
-        label: 'Expense',
-        data: {{ chart_data.expense | safe }},
-        borderColor: '#e74c3c',
-        backgroundColor: 'rgba(231, 76, 60, 0.15)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4,
-        pointHoverRadius: 6
-        });
-    {% else %}
-    datasets.push({
-        label: '{{ key|cut:"_"|title }}',
-        data: {{ chart_data.data | safe }},
-        backgroundColor: COLORS,
-        borderColor: BORDERS,
-        borderWidth: 1,
-        tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        fill: (chartType === 'line')
-        });
-    {% endif %}
+            var type, datasets;
 
-    new Chart(ctx, {
-        type: chartType,
-        data: {
-            labels: {{ chart_data.labels | safe }},
-        datasets: datasets
-            },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'bottom' }
-        },
-        scales: (chartType !== 'doughnut') ? {
-            y: {
-                beginAtZero: true,
-                grid: { display: true, drawBorder: false }
-            },
-            x: {
-                grid: { display: false }
+            if (d.income && d.income.length) {
+                /* Dual-dataset: income vs expense */
+                type = 'line';
+                datasets = [
+                    {
+                        label: 'Income',
+                        data: d.income,
+                        borderColor: 'rgb(13,148,136)',
+                        backgroundColor: 'rgba(13,148,136,0.1)',
+                        tension: 0.42, fill: true, borderWidth: 2,
+                        pointRadius: 3, pointHoverRadius: 5,
+                        pointBackgroundColor: 'rgb(13,148,136)',
+                    },
+                    {
+                        label: 'Expense',
+                        data: d.expense,
+                        borderColor: 'rgb(220,38,38)',
+                        backgroundColor: 'rgba(220,38,38,0.08)',
+                        tension: 0.42, fill: true, borderWidth: 2,
+                        pointRadius: 3, pointHoverRadius: 5,
+                        pointBackgroundColor: 'rgb(220,38,38)',
+                    },
+                ];
+            } else {
+                /* Single-dataset — type determined by key name */
+                type = 'bar';
+                if (key.indexOf('trend') !== -1) type = 'line';
+                if (key.indexOf('status') !== -1 || key.indexOf('breakdown') !== -1) type = 'doughnut';
+
+                var label = key.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+                datasets = [{
+                    label: label,
+                    data: d.data,
+                    backgroundColor: BG,
+                    borderColor: type === 'doughnut' ? 'transparent' : BD,
+                    borderWidth: type === 'doughnut' ? 0 : 2,
+                    tension: 0.42, fill: type === 'line',
+                    pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: BD,
+                }];
             }
-        } : {}
-    }
+
+            new Chart(canvas.getContext('2d'), {
+                type: type,
+                data: { labels: d.labels, datasets: datasets },
+                options: opts(type),
+            });
         });
-    }) ();
-    {% endif %}
-    {% endfor %}
-});
+
+    });
 </script>
 {% endblock %}

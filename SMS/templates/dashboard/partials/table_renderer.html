@@ -1,29 +1,39 @@
 {% if table_key == 'recent_admissions' %}
 <table class="table table-hover align-middle mb-0">
-    <thead class="bg-light">
+    <thead>
         <tr>
             <th>Student</th>
-            <th>Class</th>
-            <th>Date</th>
+            <th>Class & Section</th>
+            <th>Admission Date</th>
         </tr>
     </thead>
     <tbody>
         {% for student in table_data %}
         <tr>
             <td>
-                <div class="d-flex align-items-center">
-                    <div class="avatar-sm me-2 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                        style="width: 32px; height: 32px;">
-                        {{ student.first_name|first }}
-                    </div>
-                    <div>
-                        <h6 class="mb-0 text-sm">{{ student.full_name }}</h6>
-                        <small class="text-muted">{{ student.admission_number }}</small>
+                <div class="student-info">
+                    <div class="student-avatar">{{ student.first_name|first }}{{ student.last_name|first }}</div>
+                    <div class="student-details">
+                        <div class="student-name">{{ student.full_name }}</div>
+                        <div class="student-meta">{{ student.admission_number }}</div>
                     </div>
                 </div>
             </td>
-            <td>{{ student.section }}</td>
-            <td>{{ student.enrollment_date|date:"M d, Y" }}</td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <i class="bi bi-book" style="color: var(--sms-primary); font-size: 0.8rem;"></i>
+                    <span style="font-weight: 500;">{{ student.section }}</span>
+                </div>
+            </td>
+            <td><span class="date-cell"><i class="bi bi-calendar3 me-1" style="font-size: 0.7rem;"></i>{{
+                    student.enrollment_date|date:"M d, Y" }}</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3" class="empty-state">
+                <i class="bi bi-person-plus"></i>
+                No recent admissions
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -31,7 +41,7 @@
 
 {% elif table_key == 'recent_transactions' or table_key == 'payment_history' %}
 <table class="table table-hover align-middle mb-0">
-    <thead class="bg-light">
+    <thead>
         <tr>
             <th>Student</th>
             <th>Amount</th>
@@ -42,10 +52,26 @@
     <tbody>
         {% for fee in table_data %}
         <tr>
-            <td>{{ fee.student.full_name }}</td>
-            <td>PKR {{ fee.amount_paid|floatformat:0 }}</td>
-            <td><span class="badge bg-success">Paid</span></td>
-            <td>{{ fee.paid_date|date:"M d, Y" }}</td>
+            <td>
+                <div class="student-info">
+                    <div class="student-avatar">{{ fee.student.full_name|first }}</div>
+                    <div class="student-details">
+                        <div class="student-name">{{ fee.student.full_name }}</div>
+                    </div>
+                </div>
+            </td>
+            <td><span class="amount-positive">PKR {{ fee.amount_paid|floatformat:0 }}</span></td>
+            <td><span class="status-pill paid"><i class="bi bi-check-circle-fill me-1"
+                        style="font-size: 0.65rem;"></i>Paid</span></td>
+            <td><span class="date-cell"><i class="bi bi-clock me-1" style="font-size: 0.7rem;"></i>{{
+                    fee.paid_date|date:"M d, Y" }}</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="empty-state">
+                <i class="bi bi-cash"></i>
+                No transactions found
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -53,19 +79,37 @@
 
 {% elif table_key == 'top_defaulters' %}
 <table class="table table-hover align-middle mb-0">
-    <thead class="bg-light">
+    <thead>
         <tr>
             <th>Student</th>
-            <th>Pending</th>
+            <th>Pending Amount</th>
             <th>Due Date</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
         {% for fee in table_data %}
         <tr>
-            <td>{{ fee.student.full_name }}</td>
-            <td class="text-danger fw-bold">PKR {{ fee.balance|floatformat:0 }}</td>
-            <td>{{ fee.due_date|date:"M d, Y" }}</td>
+            <td>
+                <div class="student-info">
+                    <div class="student-avatar">{{ fee.student.full_name|first }}</div>
+                    <div class="student-details">
+                        <div class="student-name">{{ fee.student.full_name }}</div>
+                    </div>
+                </div>
+            </td>
+            <td><span class="amount-negative">PKR {{ fee.balance|floatformat:0 }}</span></td>
+            <td><span class="date-cell"><i class="bi bi-exclamation-triangle me-1"
+                        style="color: #b91c1c; font-size: 0.7rem;"></i>{{ fee.due_date|date:"M d, Y" }}</span></td>
+            <td><span class="status-pill unpaid"><i class="bi bi-x-circle-fill me-1"
+                        style="font-size: 0.65rem;"></i>Unpaid</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="empty-state">
+                <i class="bi bi-check-circle"></i>
+                No defaulters found
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -73,60 +117,111 @@
 
 {% elif table_key == 'recent_exams' or table_key == 'upcoming_exams' %}
 <table class="table table-hover align-middle mb-0">
-    <thead class="bg-light">
+    <thead>
         <tr>
-            <th>Exam</th>
+            <th>Exam Name</th>
             <th>Class</th>
-            <th>Date</th>
+            <th>Schedule</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
         {% for exam in table_data %}
         <tr>
-            <td>{{ exam.name }}</td>
-            <td>{{ exam.class_obj }}</td>
-            <td>{{ exam.date|date:"M d, Y" }}</td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-pencil-square" style="color: var(--sms-primary); font-size: 1rem;"></i>
+                    <span style="font-weight: 600;">{{ exam.name }}</span>
+                </div>
+            </td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <i class="bi bi-people" style="color: #64748b; font-size: 0.8rem;"></i>
+                    {{ exam.class_obj }}
+                </div>
+            </td>
+            <td><span class="date-cell"><i class="bi bi-calendar-event me-1" style="font-size: 0.7rem;"></i>{{
+                    exam.date|date:"M d, Y" }}</span></td>
+            <td><span class="status-pill pending"><i class="bi bi-hourglass-split me-1"
+                        style="font-size: 0.65rem;"></i>Upcoming</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="empty-state">
+                <i class="bi bi-journal-x"></i>
+                No exams scheduled
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
 {% elif table_key == 'announcements' or table_key == 'notices' %}
-<ul class="list-group list-group-flush">
+<div style="padding: 0;">
     {% for notice in table_data %}
-    <li class="list-group-item px-0 py-3">
-        <div class="d-flex justify-content-between">
-            <h6 class="mb-1">{{ notice.title }}</h6>
-            <small class="text-muted">{{ notice.date|date:"M d" }}</small>
+    <div class="notice-item">
+        <div class="notice-title">
+            <span style="display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-megaphone" style="color: var(--sms-primary); font-size: 0.9rem;"></i>
+                {{ notice.title }}
+            </span>
+            <span class="notice-date">{{ notice.date|date:"M d, Y" }}</span>
         </div>
-        <p class="mb-0 text-muted small">{{ notice.message|truncatechars:100 }}</p>
-    </li>
+        <p class="notice-body">{{ notice.message|truncatechars:120 }}</p>
+        {% if notice.author %}
+        <div style="margin-top: 8px; font-size: 0.7rem; color: #94a3b8;">
+            <i class="bi bi-person-circle me-1"></i> {{ notice.author }}
+        </div>
+        {% endif %}
+    </div>
     {% empty %}
-    <li class="list-group-item text-center text-muted">No notices found.</li>
+    <div class="empty-state" style="margin: 0; border-radius: 0;">
+        <i class="bi bi-bell-slash"></i>
+        No notices found
+    </div>
     {% endfor %}
-</ul>
+</div>
 
 {% elif table_key == 'salary_slips' %}
 <table class="table table-hover align-middle mb-0">
-    <thead class="bg-light">
+    <thead>
         <tr>
             <th>Month</th>
             <th>Amount</th>
             <th>Status</th>
+            <th>Payment Date</th>
         </tr>
     </thead>
     <tbody>
         {% for slip in table_data %}
         <tr>
-            <td>{{ slip.month_year_label }}</td>
-            <td>PKR {{ slip.salary_amount|floatformat:0 }}</td>
-            <td><span class="badge bg-success">Paid</span></td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-calendar-month" style="color: var(--sms-primary); font-size: 0.9rem;"></i>
+                    <span style="font-weight: 500;">{{ slip.month_year_label }}</span>
+                </div>
+            </td>
+            <td><span class="amount-positive">PKR {{ slip.salary_amount|floatformat:0 }}</span></td>
+            <td><span class="status-pill paid"><i class="bi bi-check-circle-fill me-1"
+                        style="font-size: 0.65rem;"></i>Paid</span></td>
+            <td><span class="date-cell"><i class="bi bi-check2-circle me-1" style="font-size: 0.7rem;"></i>{{
+                    slip.payment_date|date:"M d, Y"|default:"Today" }}</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="empty-state">
+                <i class="bi bi-wallet2"></i>
+                No salary slips found
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
 {% else %}
-<!-- Fallback for generic tables -->
-<div class="p-3 text-muted">Data view not implemented for {{ table_key }}</div>
+<div class="empty-state">
+    <i class="bi bi-table"></i>
+    No view defined for <code
+        style="background: #eef2f6; padding: 0.2rem 0.4rem; border-radius: 4px;">{{ table_key }}</code>
+</div>
 {% endif %}

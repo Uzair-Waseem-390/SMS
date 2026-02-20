@@ -390,6 +390,7 @@ def school_detail(request):
     """View the principal's own school details."""
     try:
         school = request.user.owned_school
+        max_branches = school.branches.all().count()
     except SchoolTenant.DoesNotExist:
         messages.warning(request, 'You have not set up a school yet.')
         return redirect('tenants:setup_wizard')
