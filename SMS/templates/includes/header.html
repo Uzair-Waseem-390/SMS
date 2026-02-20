@@ -6,9 +6,36 @@
         </button>
         <span class="school-name-header">🏫 {{ current_school.name|default:"School Management System" }}</span>
         <!-- search area -->
-        <div class="search-wrapper ms-auto">
-            <input type="text" placeholder="Search students, fees, classes..." aria-label="Search">
-            <button type="submit"><i class="bi bi-search me-1"></i> Go</button>
+        <!-- Branch Switcher (Principal Only) -->
+        <div class="ms-auto me-3">
+            {% if principal_branches|length > 1 %}
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <i class="bi bi-diagram-3 me-1"></i>
+                    {{ current_branch.name|default:"Select Branch" }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow" style="max-height: 300px; overflow-y: auto;">
+                    <li>
+                        <h6 class="dropdown-header">Switch Branch</h6>
+                    </li>
+                    {% for b in principal_branches %}
+                    <li>
+                        <a class="dropdown-item {% if current_branch.id == b.id %}active{% endif %}"
+                            href="{% url 'tenants:switch_branch' %}?branch_id={{ b.id }}">
+                            {% if b.is_main_branch %}<i class="bi bi-star-fill text-warning me-1"></i>{% endif %}
+                            {{ b.name }}
+                            {% if current_branch.id == b.id %}<i class="bi bi-check2 ms-auto"></i>{% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% elif current_branch %}
+            <span class="badge bg-primary d-none d-md-inline-block p-2">
+                <i class="bi bi-house me-1"></i> {{ current_branch.name }}
+            </span>
+            {% endif %}
         </div>
         <!-- user avatar placeholder -->
         <div class="ms-3 d-flex align-items-center">

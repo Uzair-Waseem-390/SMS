@@ -5,36 +5,7 @@
         <span>EduSaaS</span>
     </div>
 
-    <!-- Branch Switcher (Principal Only) -->
-    {% if principal_branches|length > 1 %}
-    <div class="px-3 py-2" style="background: #1a2332;">
-        <small class="text-white-50 d-block mb-1"><i class="bi bi-diagram-3 me-1"></i>Active Branch</small>
-        <div class="dropdown">
-            <button class="btn btn-sm btn-outline-light w-100 dropdown-toggle text-start" type="button"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-building me-1"></i>
-                {{ current_branch.name|default:"Select Branch" }}
-            </button>
-            <ul class="dropdown-menu dropdown-menu-dark w-100" style="max-height: 250px; overflow-y: auto;">
-                {% for b in principal_branches %}
-                <li>
-                    <a class="dropdown-item {% if current_branch.id == b.id %}active{% endif %}"
-                        href="{% url 'tenants:switch_branch' %}?branch_id={{ b.id }}">
-                        {% if b.is_main_branch %}<i class="bi bi-star-fill text-warning me-1"></i>{% endif %}
-                        {{ b.name }}
-                        {% if current_branch.id == b.id %}<i class="bi bi-check2 ms-auto"></i>{% endif %}
-                    </a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-    {% elif current_branch %}
-    <div class="px-3 py-2 text-center" style="background: #1a2332;">
-        <small class="text-white-50">{{ current_school.name }}</small><br>
-        <span class="badge bg-primary">{{ current_branch.name }}</span>
-    </div>
-    {% endif %}
+
 
     <nav class="nav flex-column">
         <a class="nav-link" href="{% sb_url 'dashboard:index' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>

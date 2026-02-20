@@ -3,7 +3,7 @@
        School Management System - Unified Teal Theme
        Primary: #0d9488 | Trust, Professionalism, Education
        ============================================ */
-    
+
     :root {
         --sms-primary: #0d9488;
         --sms-primary-dark: #0f766e;
@@ -18,7 +18,8 @@
         --sms-border: #e2e8f0;
     }
 
-    html, body {
+    html,
+    body {
         height: 100%;
         margin: 0;
         font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -135,7 +136,8 @@
         width: 350px;
     }
 
-    .search-wrapper:hover, .search-wrapper:focus-within {
+    .search-wrapper:hover,
+    .search-wrapper:focus-within {
         border-color: var(--sms-primary);
         box-shadow: 0 0 0 3px var(--sms-primary-subtle);
         background: white;
@@ -221,22 +223,75 @@
     }
 
     /* Override Bootstrap for consistency */
-    .btn-primary, .bg-primary { background-color: var(--sms-primary) !important; border-color: var(--sms-primary) !important; }
-    .btn-primary:hover { background-color: var(--sms-primary-dark) !important; border-color: var(--sms-primary-dark) !important; }
-    .text-primary { color: var(--sms-primary) !important; }
-    .btn-info, .bg-info { background-color: var(--sms-primary) !important; border-color: var(--sms-primary) !important; }
-    .alert-info { background-color: rgba(13, 148, 136, 0.12) !important; border-color: rgba(13, 148, 136, 0.3) !important; color: var(--sms-neutral-dark) !important; }
+    .btn-primary,
+    .bg-primary {
+        background-color: var(--sms-primary) !important;
+        border-color: var(--sms-primary) !important;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--sms-primary-dark) !important;
+        border-color: var(--sms-primary-dark) !important;
+    }
+
+    .text-primary {
+        color: var(--sms-primary) !important;
+    }
+
+    .btn-info,
+    .bg-info {
+        background-color: var(--sms-primary) !important;
+        border-color: var(--sms-primary) !important;
+    }
+
+    .alert-info {
+        background-color: rgba(13, 148, 136, 0.12) !important;
+        border-color: rgba(13, 148, 136, 0.3) !important;
+        color: var(--sms-neutral-dark) !important;
+    }
+
+    /* Fix outline buttons to match theme */
+    .btn-outline-primary {
+        color: var(--sms-primary) !important;
+        border-color: var(--sms-primary) !important;
+    }
+
+    .btn-outline-primary:hover,
+    .btn-outline-primary:active,
+    .btn-outline-primary.active,
+    .btn-outline-primary.dropdown-toggle.show {
+        background-color: var(--sms-primary) !important;
+        border-color: var(--sms-primary) !important;
+        color: white !important;
+    }
 
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     @media (max-width: 768px) {
-        .content-row { flex-direction: column; }
-        .sidebar { width: 100%; padding: 1rem; }
-        .search-wrapper { width: 200px; }
-        .school-name-header { font-size: 1.3rem; }
+        .content-row {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            padding: 1rem;
+        }
+
+        .search-wrapper {
+            width: 200px;
+        }
+
+        .school-name-header {
+            font-size: 1.3rem;
+        }
     }
 </style>
 <!-- Google Fonts -->
