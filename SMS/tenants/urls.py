@@ -7,9 +7,6 @@ urlpatterns = [
     # Setup wizard
     path('setup/', views.setup_wizard, name='setup_wizard'),
 
-    # Test page after setup
-    path('test/', views.test_page, name='test_page'),
-
     # Legacy branch management
     path('branch/<int:branch_id>/manage/', views.manage_branch, name='manage_branch'),
 

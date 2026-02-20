@@ -47,9 +47,6 @@ urlpatterns = [
     path('terms/', views.terms_and_conditions, name='terms'),
     path('policies/', views.privacy_policies, name='policies'),
     
-    # Test Page (for logged-in users)
-    path('test/', views.test_page, name='test_page'),
-
     # forgot password
     path('forgotPassword/', views.forgotPassword, name='forgotPassword'),
     path('resetpassword-validate/<uidb64>/<token>/', views.resetpassword_validate, name='resetpassword_validate'),

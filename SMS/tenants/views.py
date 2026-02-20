@@ -297,6 +297,7 @@ def handle_step3(request):
                     fee_kwargs['yearly_installments'] = branch_info.get('yearly_installments')
                 BranchFeeStructure.objects.create(**fee_kwargs)
             
+
             # Clear session data
             request.session.pop('setup_step', None)
             request.session.pop('school_data', None)
@@ -308,7 +309,10 @@ def handle_step3(request):
                 f'Congratulations! Your school "{school.name}" has been created successfully. '
                 f'You can now log in as manager with the credentials you set.'
             )
-            return redirect('tenants:test_page')
+            branch = school.branches.filter(is_main_branch=True).first() or school.branches.first()
+            if branch:
+                return redirect('dashboard:index', school_id=school.id, branch_id=branch.id)
+            return redirect('dashboard:index')
             
         except Exception as e:
             messages.error(request, f'An error occurred while saving: {str(e)}')
@@ -322,40 +326,6 @@ def handle_step3(request):
             'title': 'Step 3: Manager Credentials'
         })
 
-
-@login_required
-def test_page(request):
-    """
-    Test page for users who have completed setup.
-    This will be replaced with actual dashboard later.
-    """
-    # Check if user has setup, if not redirect to wizard
-    if not has_school_setup(request.user):
-        messages.warning(request, 'Please complete your school setup first.')
-        return redirect('tenants:setup_wizard')
-    
-    # Get user's school and branches
-    try:
-        if request.user.user_type == 'principal':
-            school = request.user.owned_school
-            branches = school.branches.all()
-        elif request.user.user_type == 'manager':
-            branch = request.user.managed_branch
-            school = branch.school
-            branches = school.branches.all()
-        else:
-            school = None
-            branches = None
-    except:
-        school = None
-        branches = None
-    
-    return render(request, 'tenants/test_page.html', {
-        'school': school,
-        'branches': branches,
-        'user': request.user,
-        'title': 'Setup Complete - Test Page'
-    })
 
 
 @login_required

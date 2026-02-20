@@ -15,7 +15,7 @@ def _login_redirect(user, request):
     school = get_user_school(user, request)
     branch = get_user_branch(user, request)
     if school and branch:
-        return redirect('finance:dashboard', school_id=school.id, branch_id=branch.id)
+        return redirect('dashboard:index', school_id=school.id, branch_id=branch.id)
     return redirect('dashboard:index')
 
 
@@ -218,16 +218,6 @@ def privacy_policies(request):
     return render(request, 'accounts/policies.html', {
         'title': 'Privacy Policies'
     })
-
-@login_required
-def test_page(request):
-    """
-    Test page for logged-in users.
-    This page confirms successful login and shows user details.
-    """
-    return redirect('dashboard:index')
-
-
 
 def forgotPassword(request):
     if request.method == 'POST':
