@@ -21,6 +21,7 @@ scoped_patterns = [
     path('notifications/', include('notification.urls')),
     path('finance/', include('finance.urls')),
     path('certificate/', include('certificate.urls')),
+    path('dashboard/', include('dashboard.urls')),
 ]
 
 urlpatterns = [

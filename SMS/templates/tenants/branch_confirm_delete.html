@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 560px;">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-5 text-center">
+            <div class="mb-4">
+                <span class="display-5 text-danger">
+                    <i class="bi bi-pause-circle-fill"></i>
+                </span>
+            </div>
+            <h3 class="fw-bold mb-2">Deactivate Branch?</h3>
+            <p class="text-muted mb-1">You are about to deactivate:</p>
+            <h4 class="text-primary mb-1">{{ branch.name }}</h4>
+            <p class="text-muted mb-4">{{ branch.city }} &bull; {{ school.name }}</p>
+
+            {% if active_count <= 1 %} <div class="alert alert-danger text-start">
+                <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                <strong>Cannot deactivate</strong> — this is the only active branch. A school must have at least one
+                active branch.
+        </div>
+        <a href="{% url 'tenants:branch_list' %}" class="btn btn-secondary mt-2">Go Back</a>
+
+        {% else %}
+        <div class="alert alert-warning text-start">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Deactivating this branch will hide it from all dashboards. Staff and students assigned to this branch may
+            lose access.
+            This does <strong>not</strong> delete any data.
+        </div>
+
+        <div class="d-flex gap-3 justify-content-center mt-3">
+            <a href="{% url 'tenants:branch_list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger px-4">
+                    <i class="bi bi-pause-circle me-1"></i> Yes, Deactivate
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}

@@ -43,6 +43,7 @@ EXTERNAL_APPS = [
     'notification',
     'finance',
     'certificate',
+    'dashboard',
 ]
 
 
@@ -140,7 +141,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 
 LOGIN_URL = 'accounts:login'
-LOGIN_REDIRECT_URL = 'accounts:test_page'
+LOGIN_REDIRECT_URL = 'dashboard:index'
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
 

@@ -16,7 +16,7 @@ def _login_redirect(user, request):
     branch = get_user_branch(user, request)
     if school and branch:
         return redirect('finance:dashboard', school_id=school.id, branch_id=branch.id)
-    return redirect('tenants:test_page')
+    return redirect('dashboard:index')
 
 
 from .forms import (
@@ -225,10 +225,7 @@ def test_page(request):
     Test page for logged-in users.
     This page confirms successful login and shows user details.
     """
-    return render(request, 'accounts/test_page.html', {
-        'user': request.user,
-        'title': 'Login Successful - Test Page'
-    })
+    return redirect('dashboard:index')
 
 
 

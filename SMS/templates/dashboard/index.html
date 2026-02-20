@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - {{ school.name|default:"SMS" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-card {
+        transition: transform 0.2s;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-size: 1.5rem;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .empty-chart {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 300px;
+        color: #adb5bd;
+    }
+
+    .empty-chart i {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Branch Switcher Pills */
+    .branch-switcher .btn {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">{{ greeting }}, {{ request.user.get_short_name }}!</h2>
+            <p class="text-muted mb-0">
+                {% if selected_branch_id != 'all' and branch %}
+                {{ branch.name }}
+                {% else %}
+                {{ school.name }} — All Branches
+                {% endif %}
+                | {{ role|title }} Dashboard
+            </p>
+        </div>
+        <div>
+            <span class="badge bg-primary rounded-pill px-3 py-2">
+                {{ today|date:"l, F j, Y" }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Branch Switcher (Principal Only) -->
+    {% if role == 'principal' and all_branches %}
+    <div class="d-flex align-items-center gap-2 mb-4 flex-wrap branch-switcher">
+        <span class="text-muted small fw-semibold me-1"><i class="bi bi-diagram-3 me-1"></i>View:</span>
+        <a href="?branch=all"
+            class="btn btn-sm {% if selected_branch_id == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+            <i class="bi bi-grid me-1"></i> All Branches
+        </a>
+        {% for b in all_branches %}
+        <a href="?branch={{ b.id }}"
+            class="btn btn-sm {% if selected_branch_id == b.id %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+            {% if b.is_main_branch %}<i class="bi bi-star-fill me-1 text-warning"></i>{% endif %}
+            {{ b.name }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Alerts Section -->
+    {% if alerts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            {% for alert in alerts %}
+            <div class="alert alert-{{ alert.type|default:'info' }} alert-dismissible fade show" role="alert">
+                {% if alert.type == 'danger' %}<i class="bi bi-exclamation-octagon-fill me-2"></i>
+                {% elif alert.type == 'warning' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
+
+                {{ alert.message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-4">
+        {% for key, value in kpis.items %}
+        {% include "dashboard/partials/kpi.html" with label=key value=value %}
+        {% endfor %}
+    </div>
+
+    <!-- Charts Section -->
+    {% if charts %}
+    <div class="row g-4 mb-4">
+        {% for key, chart_data in charts.items %}
+        <div class="col-md-6 col-lg-6">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                    <h5 class="card-title fw-bold text-capitalize">{{ key|cut:"_"|title }}</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    {% if chart_data.labels %}
+                    <div class="chart-container">
+                        <canvas id="chart-{{ key }}"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="empty-chart">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <span>No data available yet</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Tables/Sections -->
+    {% if tables %}
+    <div class="row g-4">
+        {% for key, data in tables.items %}
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div
+                    class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold text-capitalize">{{ key|cut:"_"|title }}</h5>
+                    <a href="#" class="text-decoration-none small">View All</a>
+                </div>
+                <div class="card-body px-0">
+                    <div class="table-responsive px-4">
+                        {% include "dashboard/partials/table_renderer.html" with table_key=key table_data=data %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Chart colour palette
+        var COLORS = [
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 159, 64, 0.7)'
+        ];
+        var BORDERS = [
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 99, 132, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ];
+
+        {% for key, chart_data in charts.items %}
+        {% if chart_data.labels %}
+        (function () {
+            var canvas = document.getElementById('chart-{{ key }}');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+
+            var chartType = 'bar';
+            {% if "trend" in key %}
+            chartType = 'line';
+            {% elif "status" in key or "breakdown" in key %}
+            chartType = 'doughnut';
+            {% endif %}
+
+            var datasets = [];
+
+            {% if chart_data.income %}
+            datasets.push({
+                label: 'Income',
+                data: {{ chart_data.income | safe }},
+            borderColor: '#2ecc71',
+                backgroundColor: 'rgba(46, 204, 113, 0.15)',
+                    tension: 0.4,
+                        fill: true,
+                            pointRadius: 4,
+                                pointHoverRadius: 6
+    });
+    datasets.push({
+        label: 'Expense',
+        data: {{ chart_data.expense | safe }},
+        borderColor: '#e74c3c',
+        backgroundColor: 'rgba(231, 76, 60, 0.15)',
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6
+        });
+    {% else %}
+    datasets.push({
+        label: '{{ key|cut:"_"|title }}',
+        data: {{ chart_data.data | safe }},
+        backgroundColor: COLORS,
+        borderColor: BORDERS,
+        borderWidth: 1,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: (chartType === 'line')
+        });
+    {% endif %}
+
+    new Chart(ctx, {
+        type: chartType,
+        data: {
+            labels: {{ chart_data.labels | safe }},
+        datasets: datasets
+            },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom' }
+        },
+        scales: (chartType !== 'doughnut') ? {
+            y: {
+                beginAtZero: true,
+                grid: { display: true, drawBorder: false }
+            },
+            x: {
+                grid: { display: false }
+            }
+        } : {}
+    }
+        });
+    }) ();
+    {% endif %}
+    {% endfor %}
+});
+</script>
+{% endblock %}

@@ -4,7 +4,7 @@
         <button class="btn btn-light d-md-none me-2" type="button" style="border-radius: 40px;">
             <i class="bi bi-list"></i>
         </button>
-        <span class="school-name-header">🏫 Springdale School</span>
+        <span class="school-name-header">🏫 {{ current_school.name|default:"School Management System" }}</span>
         <!-- search area -->
         <div class="search-wrapper ms-auto">
             <input type="text" placeholder="Search students, fees, classes..." aria-label="Search">
@@ -13,7 +13,14 @@
         <!-- user avatar placeholder -->
         <div class="ms-3 d-flex align-items-center">
             <i class="bi bi-person-circle fs-3" style="color: #0d9488;"></i>
-            <span class="ms-2 d-none d-md-inline">Principal</span>
+            <span class="ms-2 d-none d-md-inline">
+                {% if request.user.is_authenticated %}
+                {{ request.user.get_full_name|default:request.user.email }}
+                <small class="d-block text-muted" style="font-size: 0.7rem;">{{ request.user.user_type|title }}</small>
+                {% else %}
+                Guest
+                {% endif %}
+            </span>
         </div>
     </div>
 </header>

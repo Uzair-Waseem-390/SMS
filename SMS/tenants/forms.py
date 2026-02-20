@@ -385,3 +385,124 @@ class BranchManagerForm(forms.ModelForm):
             self.add_error('confirm_password', 'Passwords do not match.')
         
         return cleaned_data
+
+
+class SchoolEditForm(forms.ModelForm):
+    """
+    Form for editing school information (Principal only).
+    """
+    class Meta:
+        model = SchoolTenant
+        fields = ['name', 'city', 'address', 'phone', 'email', 'established_year', 'registration_number']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+92 300 0000000'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'school@email.com'}),
+            'established_year': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '2000'}),
+            'registration_number': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class BranchCreateForm(forms.ModelForm):
+    """
+    Form for creating a new branch along with a manager account.
+    """
+    manager_email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'manager@school.com'}),
+        label='Manager Email'
+    )
+    manager_password = forms.CharField(
+        required=True,
+        initial='Temp@123456',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'value': 'Temp@123456', 'placeholder': 'Password'}),
+        label='Manager Password',
+        help_text='Temporary password — manager should change it after first login.'
+    )
+    confirm_password = forms.CharField(
+        required=True,
+        initial='Temp@123456',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'value': 'Temp@123456', 'placeholder': 'Confirm Password'}),
+        label='Confirm Password'
+    )
+    manager_salary = forms.DecimalField(
+        required=False,
+        min_value=0,
+        initial=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Monthly Salary (PKR)', 'step': '1000'}),
+        label='Manager Monthly Salary (PKR)'
+    )
+
+    class Meta:
+        model = Branch
+        fields = ['name', 'city', 'address', 'phone', 'email', 'is_main_branch']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Main Campus'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+92 300 0000000'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'branch@school.com'}),
+            'is_main_branch': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('manager_password')
+        confirm = cleaned_data.get('confirm_password')
+        if password and confirm and password != confirm:
+            self.add_error('confirm_password', 'Passwords do not match.')
+        if password and len(password) < 8:
+            self.add_error('manager_password', 'Password must be at least 8 characters.')
+        return cleaned_data
+
+
+class BranchUpdateForm(forms.ModelForm):
+    """
+    Form for updating an existing branch and optionally updating manager credentials.
+    """
+    manager_email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        label='Manager Email'
+    )
+    manager_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Manager Full Name'}),
+        label='Manager Full Name'
+    )
+    new_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label='New Password (leave blank to keep current)'
+    )
+    confirm_new_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label='Confirm New Password'
+    )
+
+    class Meta:
+        model = Branch
+        fields = ['name', 'city', 'address', 'phone', 'email', 'is_main_branch', 'is_active', 'manager_salary']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'city': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'is_main_branch': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'manager_salary': forms.NumberInput(attrs={'class': 'form-control', 'step': '1000'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('new_password')
+        confirm = cleaned_data.get('confirm_new_password')
+        if password and confirm and password != confirm:
+            self.add_error('confirm_new_password', 'Passwords do not match.')
+        if password and len(password) < 8:
+            self.add_error('new_password', 'Password must be at least 8 characters.')
+        return cleaned_data
